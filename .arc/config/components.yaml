@@ -4,6 +4,7 @@ components:
     name: Web App
     repo_ref: conn-github-c779c2c82e1240a19be07be060865028
     kind: web_ui
+    directory: apps/web
     integrations:
     - to: comp_operations_api
       interaction: sync
@@ -24,13 +25,24 @@ components:
     rule: The Web App reaches data and business logic only through the Operations
       API.
     adr: ADR-0001
+    stack:
+      choices:
+        styling: tailwind
+        language: typescript
+        framework: react + vite
+        package_manager: pnpm
+        testing_tool_e2e: playwright
+        testing_tool_unit: vitest
+      notes: no database — calls the Operations API only
   comp_operations_api:
     name: Operations API
     repo_ref: conn-github-c779c2c82e1240a19be07be060865028
     kind: api_service
+    directory: services/operations-api
     integrations:
     - to: comp_relational_database
       interaction: shared-storage
+      via: postgresql
       status: planned
       evidence: 'Database: Stores users, transactions, and application data'
       label: SQL
@@ -47,6 +59,15 @@ components:
     rule: The Operations API exposes a REST interface that the Web App calls directly,
       without a gateway or BFF.
     adr: ADR-0002
+    stack:
+      choices:
+        database: postgresql
+        language: typescript
+        framework: nestjs
+        package_manager: pnpm
+        testing_tool_e2e: supertest
+        testing_tool_unit: vitest
+      notes: REST API, styling not applicable
   comp_relational_database:
     name: Relational Database
     repo_ref: conn-github-c779c2c82e1240a19be07be060865028
@@ -54,13 +75,18 @@ components:
     zone: data
     rule: Application data is persisted only in the Relational Database.
     adr: ADR-0003
+    stack:
+      choices:
+        managed_service: PostgreSQL on Amazon RDS
   comp_background_worker:
     name: Background Worker
     repo_ref: conn-github-c779c2c82e1240a19be07be060865028
     kind: worker
+    directory: services/background-worker
     integrations:
     - to: comp_relational_database
       interaction: shared-storage
+      via: postgresql
       status: planned
       evidence: 'Background Jobs/Workers: Handle notifications, scheduled tasks, reports'
       label: SQL
@@ -73,6 +99,13 @@ components:
     rule: Notifications, scheduled tasks, reports and external-system sync run in
       the Background Worker, not in API requests.
     adr: ADR-0004
+    stack:
+      choices:
+        language: typescript
+        package_manager: pnpm
+        testing_tool_unit: vitest
+      notes: uses the shared Relational Database, owns no data; no UI so no styling
+        or e2e
   comp_identity_provider:
     name: Identity Provider
     repo_ref: conn-github-c779c2c82e1240a19be07be060865028
@@ -93,3 +126,6 @@ components:
     rule: Users sign in only through the corporate Entra ID Identity Provider; the
       project stores no passwords.
     adr: ADR-0005
+    stack:
+      choices:
+        managed_service: Microsoft Entra ID
