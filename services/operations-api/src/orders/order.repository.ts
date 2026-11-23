@@ -26,5 +26,7 @@ export interface OrderRepository {
    * write (`UPDATE orders SET status='cancelled' WHERE id=$1 AND status='placed'`), so a
    * concurrent accept by the restaurant and this cancel cannot both win.
    */
+  /** Records that a cancelled order's refund failed, so it is retried rather than lost. */
+  recordPendingRefund(id: string): Promise<void>;
   cancelIfPlaced(id: string): Promise<Order | 'not-cancellable' | 'not-found'>;
 }

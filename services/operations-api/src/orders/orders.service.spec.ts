@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 import { InMemoryOrderRepository } from './in-memory-order.repository';
 import type { Order } from './order.repository';
@@ -62,9 +62,23 @@ describe('OrdersService', () => {
     await expect(service.cancel('9', 'c1')).rejects.toBeInstanceOf(NotFoundException);
   });
 
-  it("refuses another customer's order without cancelling it", async () => {
+  it('still returns the cancelled order and records a pending refund when the refund fails', async () => {
     const { repo, refund, service } = setup([order('1', 'placed')]);
-    await expect(service.cancel('1', 'someone-else')).rejects.toBeInstanceOf(ForbiddenException);
+    refund.refundFull.mockRejectedValue(new Error('gateway down'));
+    expect(await service.cancel('1', 'c1')).toMatchObject({ id: '1', status: 'cancelled' });
+    expect(repo.pendingRefunds()).toEqual(['1']);
+  });
+
+  it('records no pending refund when the refund succeeds', async () => {
+    const { repo, service } = setup([order('1', 'placed')]);
+    await service.cancel('1', 'c1');
+    expect(repo.pendingRefunds()).toEqual([]);
+  });
+
+  it("answers not found for another customer's order, like an unknown one, without cancelling it", async () => {
+    const { repo, refund, service } = setup([order('1', 'placed')]);
+    await expect(service.cancel('1', 'someone-else')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.get('1', 'someone-else')).rejects.toBeInstanceOf(NotFoundException);
     expect(refund.refundFull).not.toHaveBeenCalled();
     expect((await repo.findById('1'))?.status).toBe('placed');
   });

@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AppModule } from '../src/app.module';
+import { OrdersModule } from '../src/orders/orders.module';
 import { InMemoryOrderRepository } from '../src/orders/in-memory-order.repository';
 import { ORDER_REPOSITORY, type Order } from '../src/orders/order.repository';
 import { REFUND_GATEWAY } from '../src/orders/refund.gateway';
@@ -30,7 +30,7 @@ describe('POST /orders/:id/cancel', () => {
       order('4823', 'rejected'),
       order('4824', 'placed'),
     ]);
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+    const moduleRef = await Test.createTestingModule({ imports: [OrdersModule] })
       .overrideProvider(ORDER_REPOSITORY)
       .useValue(repo)
       .overrideProvider(REFUND_GATEWAY)
@@ -76,7 +76,7 @@ describe('POST /orders/:id/cancel', () => {
   });
 
   it("does not let another customer cancel an order", async () => {
-    await request(server()).post('/orders/4824/cancel').set('x-customer-id', 'c2').expect(403);
+    await request(server()).post('/orders/4824/cancel').set('x-customer-id', 'c2').expect(404);
     expect(refunds.refundFull).not.toHaveBeenCalled();
     expect((await repo.findById('4824'))?.status).toBe('placed');
   });

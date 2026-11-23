@@ -24,6 +24,16 @@ export class InMemoryOrderRepository implements OrderRepository {
     return { ...order };
   }
 
+  private readonly pending = new Set<string>();
+
+  async recordPendingRefund(id: string): Promise<void> {
+    this.pending.add(id);
+  }
+
+  pendingRefunds(): string[] {
+    return [...this.pending];
+  }
+
   /** The restaurant's accept, here so tests can race it against a cancel. */
   async accept(id: string): Promise<Order | 'not-acceptable' | 'not-found'> {
     const order = this.orders.get(id);

@@ -41,7 +41,8 @@ describe('OrderStatusPage cancel button', () => {
   it.each(['accepted', 'rejected'] as const)('is not shown for a %s order', async (status) => {
     vi.mocked(getOrder).mockResolvedValue(order(status));
     render(<OrderStatusPage orderId="4821" />);
-    await screen.findByRole('heading', { name: 'Order #4821' });
+    // Only present once the order has loaded (the h1 is also rendered while loading).
+    await screen.findByText(/From Harbor Noodle House/);
     expect(cancelButton()).not.toBeInTheDocument();
   });
 });
@@ -90,6 +91,16 @@ describe('OrderStatusPage confirm step', () => {
     expect(screen.getByText('Accepted')).toHaveAttribute('aria-current', 'step');
     expect(cancelButton()).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Confirm cancellation' })).not.toBeInTheDocument();
+  });
+
+  it('shows the cancelled state, not the accepted message, when the server says it is already cancelled', async () => {
+    vi.mocked(cancelOrder).mockResolvedValue({ kind: 'not-cancellable', status: 'cancelled' });
+    vi.mocked(getOrder).mockResolvedValueOnce(order('placed')).mockResolvedValue(order('cancelled'));
+    render(<OrderStatusPage orderId="4821" />);
+    await openConfirm();
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm cancellation' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Order cancelled');
+    expect(screen.queryByText(/restaurant has accepted it/)).not.toBeInTheDocument();
   });
 
   it('keeps the confirm open and says what went wrong when cancelling fails', async () => {

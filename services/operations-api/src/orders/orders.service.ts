@@ -1,6 +1,5 @@
 import {
   ConflictException,
-  ForbiddenException,
   Inject,
   Injectable,
   Logger,
@@ -54,14 +53,24 @@ export class OrdersService {
       throw new ConflictException({ code: 'ORDER_NOT_CANCELLABLE', status: current?.status });
     }
     this.logger.log(`order ${result.id} cancelled by customer ${customerId}`);
-    await this.refunds.refundFull(result.id);
+    try {
+      await this.refunds.refundFull(result.id);
+    } catch (err) {
+      // The cancel is already committed; keep it and queue the refund instead of failing the call.
+      this.logger.error(
+        `refund failed for cancelled order ${result.id} (customer ${customerId}); recorded as pending`,
+        err instanceof Error ? err.stack : String(err),
+      );
+      await this.orders.recordPendingRefund(result.id);
+    }
     return toDto(result);
   }
 
   private async ownOrder(orderId: string, customerId: string): Promise<Order> {
     const order = await this.orders.findById(orderId);
     if (!order) throw new NotFoundException();
-    if (order.customerId !== customerId) throw new ForbiddenException();
+    // Same answer as an unknown id, so ids cannot be probed for existence.
+    if (order.customerId !== customerId) throw new NotFoundException();
     return order;
   }
 }

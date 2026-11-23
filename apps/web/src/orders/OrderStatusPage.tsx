@@ -61,7 +61,8 @@ export default function OrderStatusPage({ orderId }: { orderId: string }) {
       if (result.kind === 'cancelled') {
         setLoad({ state: 'loaded', order: { ...order, status: 'cancelled', canCancel: false } });
       } else {
-        setRaced(true);
+        // Only a later status means the restaurant got there first; 'cancelled' is our own cancel.
+        setRaced(result.status !== 'cancelled');
         setLoad({ state: 'loaded', order: await getOrder(order.id) });
       }
       setConfirming(false);
