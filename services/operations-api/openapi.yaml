@@ -1,0 +1,80 @@
+openapi: 3.0.3
+info:
+  title: Operations API
+  version: 1.0.0
+paths:
+  /restaurants:
+    get:
+      summary: List restaurants (public, no authentication)
+      parameters:
+        - name: location
+          in: query
+          required: false
+          description: Exact postcode. Blank or absent lists every restaurant.
+          schema: { type: string }
+      responses:
+        '200':
+          description: Restaurants, closed ones included. An unserved location gives an empty list.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [restaurants]
+                properties:
+                  restaurants:
+                    type: array
+                    items: { $ref: '#/components/schemas/RestaurantSummary' }
+  /restaurants/{id}/menu:
+    get:
+      summary: Read a restaurant's current menu (public, never cached)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: The menu, unavailable items included.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RestaurantMenu' }
+        '400': { description: The id is not a UUID. }
+        '404': { description: No such restaurant. }
+components:
+  schemas:
+    RestaurantSummary:
+      type: object
+      required: [id, name, cuisine, isOpen, hoursLabel, deliveryFeeCents, etaLabel]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        cuisine: { type: string }
+        isOpen: { type: boolean }
+        hoursLabel: { type: string }
+        deliveryFeeCents: { type: integer }
+        etaLabel: { type: string }
+    MenuItem:
+      type: object
+      required: [id, name, description, priceCents, isAvailable]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string }
+        priceCents: { type: integer }
+        isAvailable: { type: boolean }
+    RestaurantMenu:
+      allOf:
+        - $ref: '#/components/schemas/RestaurantSummary'
+        - type: object
+          required: [serviceLocations, menuUpdatedAt, categories]
+          properties:
+            serviceLocations: { type: array, items: { type: string } }
+            menuUpdatedAt: { type: string, format: date-time }
+            categories:
+              type: array
+              items:
+                type: object
+                required: [name, items]
+                properties:
+                  name: { type: string }
+                  items: { type: array, items: { $ref: '#/components/schemas/MenuItem' } }

@@ -3,14 +3,18 @@
   "version": "0.0.1",
   "private": true,
   "description": "Operations API (comp_operations_api)",
-  "engines": { "node": "22" },
+  "engines": {
+    "node": "22"
+  },
   "packageManager": "pnpm@12.9.1",
   "scripts": {
     "build": "nest build",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main.js",
-    "typecheck": "tsc --noEmit",
+    "migrate": "nest build && node dist/database/migrate.js",
+    "seed:dev": "psql \"$DATABASE_URL\" -f seeds/dev-restaurants.sql",
+    "typecheck":"tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",
     "e2e": "vitest run --config vitest.config.e2e.ts",
     "devloop": "pnpm typecheck && pnpm test"
@@ -19,6 +23,8 @@
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@types/pg": "^8.23.1",
+    "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
