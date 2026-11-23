@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "description": "Operations API (comp_operations_api)",
-  "engines": { "node": "22" },
+  "engines": {
+    "node": "22"
+  },
   "packageManager": "pnpm@12.9.1",
   "scripts": {
     "build": "nest build",
@@ -12,15 +14,21 @@
     "start:prod": "node dist/main.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",
-    "e2e": "vitest run --config vitest.config.e2e.ts",
+    "migrate": "node-pg-migrate -m migrations",
+    "e2e":"vitest run --config vitest.config.e2e.ts",
     "devloop": "pnpm typecheck && pnpm test"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@types/pg": "^8.23.1",
+    "jose": "^6.2.18",
+    "node-pg-migrate": "^7.9.1",
+    "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",

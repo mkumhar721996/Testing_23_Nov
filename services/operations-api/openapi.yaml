@@ -1,0 +1,208 @@
+openapi: 3.0.3
+info:
+  title: Operations API
+  version: 1.0.0
+  description: >
+    Employee onboarding. Every route needs an Entra ID bearer token except /health,
+    and every route is refused over plain HTTP (426) except /health.
+servers:
+  - url: https://api.example.test
+security:
+  - entra: []
+paths:
+  /health:
+    get:
+      security: []
+      responses:
+        '200': { description: ok }
+  /me:
+    get:
+      responses:
+        '200':
+          description: The signed-in person
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Me' }
+        '401': { description: Not signed in }
+  /employees/without-onboarding:
+    get:
+      description: Administrator only.
+      responses:
+        '200':
+          description: Employees with no onboarding record
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Employee' }
+        '403': { description: Not an administrator }
+  /onboarding-records:
+    get:
+      description: Only the records the caller may read.
+      responses:
+        '200':
+          description: Record summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RecordSummary' }
+    post:
+      description: Administrator only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [employeeId, startDate]
+              properties:
+                employeeId: { type: string }
+                startDate: { type: string, format: date }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecordDetail' }
+        '400': { description: Invalid body }
+        '403': { description: Not an administrator }
+        '409': { description: Employee unknown or already onboarding }
+  /onboarding-records/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      responses:
+        '200':
+          description: The record
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecordDetail' }
+        '403': { description: Caller may not read this record; no record data is returned }
+        '404': { description: Not found }
+    patch:
+      description: Administrator only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [startDate]
+              properties:
+                startDate: { type: string, format: date }
+      responses:
+        '200':
+          description: Updated record
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecordDetail' }
+        '400': { description: Invalid body }
+        '403': { description: Not an administrator }
+        '404': { description: Not found }
+  /onboarding-records/{id}/items:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      description: Administrator only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [stage, title]
+              properties:
+                stage: { $ref: '#/components/schemas/Stage' }
+                title: { type: string, minLength: 1 }
+                ownerName: { type: string }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChecklistItem' }
+        '400': { description: Invalid body }
+        '403': { description: Not an administrator }
+        '404': { description: Not found }
+  /onboarding-records/{id}/items/{itemId}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: itemId, in: path, required: true, schema: { type: string } }
+    patch:
+      description: Administrator only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                done: { type: boolean }
+                title: { type: string, minLength: 1 }
+                stage: { $ref: '#/components/schemas/Stage' }
+                ownerName: { type: string }
+      responses:
+        '200':
+          description: Updated item
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChecklistItem' }
+        '400': { description: Invalid body }
+        '403': { description: Not an administrator }
+        '404': { description: Not found }
+components:
+  securitySchemes:
+    entra:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Stage:
+      type: string
+      enum: [before_day_one, first_week]
+    Me:
+      type: object
+      properties:
+        employeeId: { type: string, nullable: true }
+        displayName: { type: string }
+        role: { type: string, enum: [administrator, manager, employee] }
+    Employee:
+      type: object
+      properties:
+        id: { type: string }
+        displayName: { type: string }
+        jobTitle: { type: string }
+        team: { type: string }
+    ChecklistItem:
+      type: object
+      properties:
+        id: { type: string }
+        stage: { $ref: '#/components/schemas/Stage' }
+        title: { type: string }
+        ownerName: { type: string }
+        done: { type: boolean }
+        position: { type: integer }
+    RecordSummary:
+      type: object
+      properties:
+        id: { type: string }
+        employee:
+          type: object
+          properties:
+            displayName: { type: string }
+            jobTitle: { type: string }
+            team: { type: string }
+        startDate: { type: string, format: date }
+        doneCount: { type: integer }
+        totalCount: { type: integer }
+        status: { type: string, enum: [not_started, in_progress, complete] }
+    RecordDetail:
+      allOf:
+        - $ref: '#/components/schemas/RecordSummary'
+        - type: object
+          properties:
+            managerName: { type: string, nullable: true }
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/ChecklistItem' }
