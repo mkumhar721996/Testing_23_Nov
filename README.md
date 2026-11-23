@@ -15,6 +15,8 @@ Roles come from Entra app roles on the access token: `administrator` (HR admin: 
 | `REQUIRE_HTTPS` | `true` | Plain HTTP gets `426`. TLS ends at the load balancer, which must send `X-Forwarded-Proto`. Set `false` for local development over HTTP only. |
 | `TEST_DATABASE_URL` | none | Optional. Enables the PostgreSQL repository tests (they drop and recreate the onboarding tables). |
 
+The HTTPS check trusts `X-Forwarded-Proto` from the nearest hop (`trust proxy` is 1). The API must therefore only be reachable through the TLS-terminating load balancer: restrict ingress with security groups so that only the load balancer can reach the API's port. If clients could reach the API directly, they could send that header themselves and bypass the plain-HTTP refusal.
+
 ## Web App settings
 
 | Variable | Purpose |

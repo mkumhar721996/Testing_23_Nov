@@ -132,7 +132,8 @@ describe('onboarding API', () => {
 
     it('lists the employees who have no onboarding yet', async () => {
       const res = await t.as(users.admin).get('/employees/without-onboarding').expect(200);
-      expect(res.body.map((e: { id: string }) => e.id)).not.toContain('emp-a');
+      const ids = res.body.map((e: { id: string }) => e.id);
+      for (const id of ['emp-a', 'emp-b', 'emp-c']) expect(ids).not.toContain(id);
     });
   });
 
@@ -193,13 +194,21 @@ describe('onboarding API', () => {
 
   describe('AC15 and status', () => {
     it('shows an empty checklist for a record with no items', async () => {
-      const res = await t.as(users.admin).get(`/onboarding-records/${recB.id}`).expect(200);
+      const fresh = await t.repo.createRecord({ employeeId: 'emp-om', startDate: '2026-12-01' }, actor);
+      const res = await t.as(users.admin).get(`/onboarding-records/${fresh.id}`).expect(200);
       expect(res.body).toMatchObject({ items: [], doneCount: 0, totalCount: 0, status: 'not_started' });
     });
 
     it('derives status from item counts only', async () => {
+      const fresh = await t.repo.createRecord({ employeeId: 'emp-m', startDate: '2026-12-01' }, actor);
+      const item = await t.repo.addItem(
+        fresh.id,
+        { stage: 'first_week', title: 'Status check', ownerName: 'Maya' },
+        actor,
+      );
+      await t.as(users.admin).patch(`/onboarding-records/${fresh.id}/items/${item.id}`).send({ done: true }).expect(200);
       const list = await t.as(users.admin).get('/onboarding-records').expect(200);
-      const a = list.body.find((r: { id: string }) => r.id === recA.id);
+      const a = list.body.find((r: { id: string }) => r.id === fresh.id);
       expect(a).toMatchObject({ doneCount: 1, totalCount: 1, status: 'complete' });
       expect(Object.keys(a).sort()).toEqual(
         ['doneCount', 'employee', 'id', 'startDate', 'status', 'totalCount'],
