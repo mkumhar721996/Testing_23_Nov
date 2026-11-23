@@ -1,0 +1,100 @@
+openapi: 3.0.3
+info:
+  title: Operations API - dashboard
+  version: 0.1.0
+paths:
+  /api/dashboard:
+    get:
+      summary: Everything the Banking Dashboard shows for the signed-in customer
+      responses:
+        '200':
+          description: The dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardData'
+        '500':
+          description: The dashboard could not be loaded
+components:
+  schemas:
+    Account:
+      type: object
+      required: [id, name, maskedNumber, balance]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        maskedNumber: { type: string }
+        balance: { type: number }
+        note: { type: string }
+    Transaction:
+      type: object
+      required: [id, payee, date, accountName, amount]
+      properties:
+        id: { type: string }
+        payee: { type: string }
+        date: { type: string, format: date-time }
+        accountName: { type: string }
+        amount: { type: number }
+    ProductSummary:
+      type: object
+      required: [id, kind, title, details]
+      properties:
+        id: { type: string }
+        kind:
+          type: string
+          enum: [savings, fixed-deposit, nps, debit-card, credit-card, home-loan]
+        title: { type: string }
+        maskedNumber: { type: string }
+        status: { type: string }
+        details:
+          type: array
+          items: { type: string }
+        progress:
+          type: object
+          required: [label, percent]
+          properties:
+            label: { type: string }
+            percent: { type: number }
+    DashboardData:
+      type: object
+      required:
+        - customerName
+        - currency
+        - totalBalance
+        - moneyInThisMonth
+        - moneyOutThisMonth
+        - accounts
+        - recentTransactions
+        - savings
+        - cards
+        - loans
+        - spendingByCategory
+      properties:
+        customerName: { type: string }
+        currency: { type: string }
+        totalBalance: { type: number }
+        moneyInThisMonth: { type: number }
+        moneyOutThisMonth: { type: number }
+        accounts:
+          type: array
+          items: { $ref: '#/components/schemas/Account' }
+        recentTransactions:
+          type: array
+          items: { $ref: '#/components/schemas/Transaction' }
+        savings:
+          type: array
+          items: { $ref: '#/components/schemas/ProductSummary' }
+        cards:
+          type: array
+          items: { $ref: '#/components/schemas/ProductSummary' }
+        loans:
+          type: array
+          items: { $ref: '#/components/schemas/ProductSummary' }
+        spendingByCategory:
+          type: array
+          items:
+            type: object
+            required: [category, amount]
+            properties:
+              category: { type: string }
+              amount: { type: number }
