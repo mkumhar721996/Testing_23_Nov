@@ -1,0 +1,53 @@
+openapi: 3.0.3
+info:
+  title: Operations API
+  version: 1.0.0
+paths:
+  /orders:
+    get:
+      summary: List the signed-in customer's orders, newest first
+      responses:
+        '200':
+          description: The customer's orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/OrderStatusView' }
+        '401': { description: Not signed in }
+  /orders/{id}:
+    get:
+      summary: Status of one of the signed-in customer's orders
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: The order and its tracker steps
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderStatusView' }
+        '401': { description: Not signed in }
+        '404': { description: No such order, or it belongs to another customer }
+components:
+  schemas:
+    OrderStep:
+      type: string
+      enum: [placed, accepted, preparing, ready, completed]
+    OrderStatusView:
+      type: object
+      required: [id, restaurantName, placedAt, fulfilment, status, steps]
+      properties:
+        id: { type: string }
+        restaurantName: { type: string }
+        placedAt: { type: string, format: date-time }
+        fulfilment: { type: string, enum: [pickup, delivery] }
+        status: { $ref: '#/components/schemas/OrderStep' }
+        steps:
+          type: array
+          description: Always all five steps, in order. Ready reads "Out for delivery" for delivery orders.
+          items:
+            type: object
+            required: [key, label]
+            properties:
+              key: { $ref: '#/components/schemas/OrderStep' }
+              label: { type: string }
