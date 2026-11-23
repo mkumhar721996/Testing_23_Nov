@@ -1,0 +1,64 @@
+openapi: 3.0.3
+info:
+  title: Operations API
+  version: 0.1.0
+security:
+  - entraBearer: []
+paths:
+  /organizations:
+    get:
+      summary: List the organizations the caller may see (all for WFC Admin and Fundraising Consultant, own for Org Admin and Org Staff)
+      responses:
+        '200':
+          description: Organizations ordered by name
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/OrganizationListItem' }
+        '401': { description: Missing or invalid token }
+  /organizations/{id}:
+    get:
+      summary: Read-only organization details with its Fundraising Consultant
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: The organization
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrganizationDetail' }
+        '400': { description: id is not a uuid }
+        '401': { description: Missing or invalid token }
+        '403': { description: An Org Admin or Org Staff user asked for another organization }
+        '404': { description: No such organization }
+components:
+  securitySchemes:
+    entraBearer: { type: http, scheme: bearer }
+  schemas:
+    OrganizationListItem:
+      type: object
+      required: [id, name, address, admin, createdBy]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        address: { type: string }
+        admin: { type: string }
+        createdBy: { type: string }
+    ConsultantContact:
+      type: object
+      required: [fullName, email, phone]
+      properties:
+        fullName: { type: string }
+        email: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+    OrganizationDetail:
+      allOf:
+        - $ref: '#/components/schemas/OrganizationListItem'
+        - type: object
+          required: [consultant]
+          properties:
+            consultant:
+              nullable: true
+              allOf:
+                - $ref: '#/components/schemas/ConsultantContact'
