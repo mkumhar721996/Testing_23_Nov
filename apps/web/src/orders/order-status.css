@@ -1,0 +1,6 @@
+.meta { color: var(--color-fg-muted); overflow-wrap: anywhere; }
+.line { display: flex; justify-content: space-between; gap: var(--space-2); padding: var(--space-1) 0; border-bottom: var(--border-width) solid var(--color-border); }
+.line:last-child { border-bottom: 0; }
+.stepper { flex-wrap: wrap; justify-content: space-between; margin-bottom: var(--density-gap); }
+.step { gap: var(--space-1); }
+.page-body .btn, .page-actions .btn { min-height: var(--control-height-lg); }

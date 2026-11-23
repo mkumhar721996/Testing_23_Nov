@@ -1,0 +1,70 @@
+openapi: 3.0.3
+info:
+  title: Operations API
+  version: 0.1.0
+paths:
+  /orders/{id}:
+    get:
+      summary: Read an order's status for its own customer
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: x-customer-id, in: header, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: The order
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '401': { description: No customer identified }
+        '403': { description: The order belongs to another customer }
+        '404': { description: Unknown order }
+  /orders/{id}/cancel:
+    post:
+      summary: Cancel an order that is still Placed and refund the full amount paid
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: x-customer-id, in: header, required: true, schema: { type: string } }
+      responses:
+        '201':
+          description: The order is now cancelled
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '401': { description: No customer identified }
+        '403': { description: The order belongs to another customer }
+        '404': { description: Unknown order }
+        '409':
+          description: The restaurant already accepted or rejected the order; nothing changed
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [code, status]
+                properties:
+                  code: { type: string, enum: [ORDER_NOT_CANCELLABLE] }
+                  status: { $ref: '#/components/schemas/OrderStatus' }
+components:
+  schemas:
+    OrderStatus:
+      type: string
+      enum: [placed, accepted, preparing, ready, completed, rejected, cancelled]
+    Order:
+      type: object
+      required: [id, status, canCancel, restaurant, placedAt, items, total, currency]
+      properties:
+        id: { type: string }
+        status: { $ref: '#/components/schemas/OrderStatus' }
+        canCancel: { type: boolean }
+        restaurant: { type: string }
+        placedAt: { type: string, format: date-time }
+        items:
+          type: array
+          items:
+            type: object
+            required: [name, quantity, price]
+            properties:
+              name: { type: string }
+              quantity: { type: integer }
+              price: { type: number }
+        total: { type: number }
+        currency: { type: string }
