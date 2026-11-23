@@ -1,0 +1,95 @@
+version: 2
+components:
+  comp_web_app:
+    name: Web App
+    repo_ref: conn-github-c779c2c82e1240a19be07be060865028
+    kind: web_ui
+    integrations:
+    - to: comp_operations_api
+      interaction: sync
+      via: http
+      status: planned
+      evidence: REST, with the Web App calling it directly
+      label: REST/JSON
+    - to: comp_identity_provider
+      interaction: sync
+      via: http
+      auth:
+        scheme: oidc
+        idp: comp_identity_provider
+      status: planned
+      evidence: Corporate SSO (Entra or Okta).
+      label: OIDC sign-in
+    zone: client
+    rule: The Web App reaches data and business logic only through the Operations
+      API.
+    adr: ADR-0001
+  comp_operations_api:
+    name: Operations API
+    repo_ref: conn-github-c779c2c82e1240a19be07be060865028
+    kind: api_service
+    integrations:
+    - to: comp_relational_database
+      interaction: shared-storage
+      status: planned
+      evidence: 'Database: Stores users, transactions, and application data'
+      label: SQL
+    - to: comp_identity_provider
+      interaction: sync
+      via: http
+      auth:
+        scheme: jwt
+        idp: comp_identity_provider
+      status: planned
+      evidence: Corporate SSO (Entra or Okta).
+      label: token validation
+    zone: application
+    rule: The Operations API exposes a REST interface that the Web App calls directly,
+      without a gateway or BFF.
+    adr: ADR-0002
+  comp_relational_database:
+    name: Relational Database
+    repo_ref: conn-github-c779c2c82e1240a19be07be060865028
+    kind: managed_service
+    zone: data
+    rule: Application data is persisted only in the Relational Database.
+    adr: ADR-0003
+  comp_background_worker:
+    name: Background Worker
+    repo_ref: conn-github-c779c2c82e1240a19be07be060865028
+    kind: worker
+    integrations:
+    - to: comp_relational_database
+      interaction: shared-storage
+      status: planned
+      evidence: 'Background Jobs/Workers: Handle notifications, scheduled tasks, reports'
+      label: SQL
+    - to: external:salesforce-api
+      interaction: async
+      via: http
+      status: planned
+      evidence: Salesforce, both ways
+    zone: application
+    rule: Notifications, scheduled tasks, reports and external-system sync run in
+      the Background Worker, not in API requests.
+    adr: ADR-0004
+  comp_identity_provider:
+    name: Identity Provider
+    repo_ref: conn-github-c779c2c82e1240a19be07be060865028
+    kind: managed_service
+    identity:
+      provider: entra
+      hosting: managed
+      protocols:
+      - oidc
+      - oauth2
+      - jwt
+      flows:
+      - authorization_code_pkce
+      token: jwt
+      sso: true
+      user_store: directory
+    zone: external
+    rule: Users sign in only through the corporate Entra ID Identity Provider; the
+      project stores no passwords.
+    adr: ADR-0005
