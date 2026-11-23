@@ -1,0 +1,48 @@
+/* App shell, order tracker and order list rules, from the approved design (app-shell.html and the Order status prototype). Tokens only. */
+.app-shell { display: grid; grid-template-columns: var(--sidebar-width) minmax(0, 1fr); min-height: 100vh; }
+.app-nav {
+  display: flex; flex-direction: column; gap: var(--space-1); padding: var(--density-padding);
+  background: var(--color-surface); border-right: var(--border-width) solid var(--color-border);
+}
+.app-brand { display: flex; align-items: center; gap: var(--space-2); font-family: var(--font-family-heading); font-weight: var(--font-weight-heading); color: var(--color-fg); text-decoration: none; }
+.app-brand-mark { display: inline-grid; place-items: center; width: var(--control-height-sm); aspect-ratio: 1; border-radius: var(--radius-control); background: var(--color-primary); color: var(--color-on-primary); font-size: var(--font-size-sm); }
+.app-nav-item {
+  display: flex; align-items: center; gap: var(--space-3); min-height: var(--control-height-md); padding: 0 var(--space-3);
+  border-radius: var(--radius-control); color: var(--color-fg-muted); font-weight: var(--font-weight-medium); text-decoration: none;
+  transition: background-color var(--motion-duration-base) var(--motion-easing-standard), color var(--motion-duration-base) var(--motion-easing-standard);
+}
+.app-nav-item:hover { background: var(--color-surface-subtle); color: var(--color-fg); }
+.app-nav-item[aria-current="page"] { background: var(--color-primary-soft); color: var(--color-primary-text); }
+.app-main { display: flex; flex-direction: column; min-width: 0; min-height: 100vh; }
+.app-header {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); min-height: var(--header-height);
+  padding: 0 var(--page-gutter); background: var(--color-surface); border-bottom: var(--border-width) solid var(--color-border);
+}
+.app-header-spacer { flex: 1; }
+.app-content { flex: 1; width: 100%; max-width: var(--container-xl); margin-inline: auto; padding: var(--density-padding) var(--page-gutter); min-width: 0; }
+.app-menu { display: none; }
+@media (max-width: 819px) {
+  .app-shell { grid-template-columns: minmax(0, 1fr); }
+  .app-menu { display: inline-flex; }
+  .app-nav { position: fixed; inset: 0 auto 0 0; z-index: var(--z-overlay); width: min(18rem, 85%); box-shadow: var(--shadow-3); }
+  .app-nav:not(.is-open) { display: none; }
+}
+
+.meta { color: var(--color-fg-muted); overflow-wrap: anywhere; }
+.page-body .btn, .page-actions .btn { min-height: var(--control-height-lg); }
+
+.stepper { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-3); margin: 0 0 var(--density-gap); padding: 0; list-style: none; counter-reset: step; }
+.step { display: flex; align-items: center; gap: var(--space-1); color: var(--color-fg-muted); font-size: var(--font-size-sm); counter-increment: step; }
+.step::before {
+  content: counter(step); display: inline-grid; place-items: center; width: var(--control-height-sm); aspect-ratio: 1;
+  border-radius: var(--radius-full); border: var(--border-width) solid var(--color-border-strong); background: var(--color-surface);
+}
+.step[aria-current="step"] { color: var(--color-fg); font-weight: var(--font-weight-semibold); }
+.step[aria-current="step"]::before, .step.is-done::before { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary); }
+.progress { height: var(--space-2); border-radius: var(--radius-full); background: var(--color-surface-subtle); overflow: hidden; }
+.progress > span { display: block; height: 100%; width: var(--progress); background: var(--color-primary); border-radius: inherit; transition: width var(--motion-duration-base) var(--motion-easing-standard); }
+
+.order-row { flex-wrap: wrap; padding-block: var(--space-1); justify-content: space-between; }
+.order-row .info { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+.order-row .side { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.order-row .btn { min-height: var(--control-height-lg); }
