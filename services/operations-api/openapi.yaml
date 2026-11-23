@@ -1,0 +1,107 @@
+openapi: 3.0.3
+info:
+  title: Operations API
+  version: 0.1.0
+paths:
+  /expense-categories:
+    get:
+      summary: List expense categories (any signed-in user)
+      parameters:
+        - name: active
+          in: query
+          description: When true, only categories that are not retired.
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: The categories, and whether the caller may change them.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [categories, canManage]
+                properties:
+                  categories:
+                    type: array
+                    items: { $ref: '#/components/schemas/ExpenseCategory' }
+                  canManage: { type: boolean }
+        '401': { $ref: '#/components/responses/Error' }
+    post:
+      summary: Add a category (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryName' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExpenseCategory' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /expense-categories/{id}:
+    patch:
+      summary: Rename an active category (admin only)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryName' }
+      responses:
+        '200':
+          description: Renamed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExpenseCategory' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /expense-categories/{id}/retire:
+    post:
+      summary: Retire a category (admin only, idempotent)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '201':
+          description: Retired
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExpenseCategory' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+components:
+  schemas:
+    ExpenseCategory:
+      type: object
+      required: [id, name, retired]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        retired: { type: boolean }
+    CategoryName:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, description: Trimmed by the server; blank is refused. }
+    ErrorBody:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [name_blank, name_taken, not_admin, not_signed_in, not_found, category_retired]
+        message: { type: string }
+  responses:
+    Error:
+      description: Error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorBody' }
