@@ -1,0 +1,51 @@
+components:
+  comp_background_worker:
+    mode: local
+    test_command: cd services/background-worker && pnpm run test
+    build_command: cd services/background-worker && pnpm run build
+    start_command: cd services/background-worker && pnpm exec tsx src/main.ts --host
+      {host} --port {port}
+    devloop_command: cd services/background-worker && pnpm run devloop
+    port_env: COMP_BACKGROUND_WORKER_PORT
+    base_port: 8081
+    ready_check:
+      url: http://localhost:{port}/
+  comp_operations_api:
+    mode: local
+    e2e_command: cd services/operations-api && pnpm e2e
+    test_command: cd services/operations-api && pnpm test
+    build_command: cd services/operations-api && pnpm build
+    start_command: cd services/operations-api && HOST={host} PORT={port} pnpm start
+    devloop_command: cd services/operations-api && pnpm devloop
+    port_env: COMP_OPERATIONS_API_PORT
+    base_port: 8080
+    ready_check:
+      url: http://localhost:{port}/
+  comp_web_app:
+    mode: local
+    e2e_command: cd apps/web && pnpm e2e
+    test_command: cd apps/web && pnpm test
+    build_command: cd apps/web && pnpm build
+    start_command: cd apps/web && pnpm exec vite --host {host} --port {port} --strictPort
+    devloop_command: cd apps/web && pnpm devloop
+    port_env: COMP_WEB_APP_PORT
+    base_port: 5173
+    ready_check:
+      url: http://localhost:{port}/
+    primary: true
+commands:
+  test: (cd services/background-worker && pnpm run test) && (cd services/operations-api
+    && pnpm test) && (cd apps/web && pnpm test)
+  build: (cd services/background-worker && pnpm run build) && (cd services/operations-api
+    && pnpm build) && (cd apps/web && pnpm build)
+  devloop: (cd services/background-worker && pnpm run devloop) && (cd services/operations-api
+    && pnpm devloop) && (cd apps/web && pnpm devloop)
+ui_tests:
+  framework: playwright
+  command: cd apps/web && pnpm exec playwright test
+setup_command: (cd apps/web && pnpm install --frozen-lockfile) && (cd services/background-worker
+  && pnpm install --frozen-lockfile) && (cd services/operations-api && pnpm install
+  --frozen-lockfile)
+toolchain:
+  node: '22'
+  pnpm: 12.9.1
