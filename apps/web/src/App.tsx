@@ -1,7 +1,11 @@
+import IconSprite from './components/IconSprite';
+import DashboardPage from './dashboard/DashboardPage';
+
 export default function App() {
   return (
-    <main className="min-h-screen p-8">
-      <h1 className="text-2xl font-semibold">Web App</h1>
-    </main>
+    <>
+      <IconSprite />
+      <DashboardPage />
+    </>
   );
 }

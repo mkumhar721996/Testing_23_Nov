@@ -3,6 +3,7 @@ import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
+import { TOKEN_VERIFIER } from '../src/auth/token-verifier';
 
 describe('GET /health', () => {
   let app: INestApplication;
@@ -10,7 +11,10 @@ describe('GET /health', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(TOKEN_VERIFIER)
+      .useValue({ verify: async () => ({ subject: 'unused' }) })
+      .compile();
     app = moduleRef.createNestApplication();
     await app.init();
   });
