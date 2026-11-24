@@ -1,8 +1,8 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import DashboardPage from './DashboardPage';
 import { fetchDashboard } from './dashboard-api';
-import type { DashboardResponse, Product } from './types';
+import type { DashboardResponse, Product, Transaction } from './types';
 
 vi.mock('./dashboard-api', () => ({ fetchDashboard: vi.fn() }));
 
@@ -15,9 +15,13 @@ const card = (id: string, name: string): Product => ({ ...base, id, type: 'credi
 const loan: Product = { ...base, id: 'l1', type: 'loan', name: 'Personal loan', last4: '4406', outstandingBalance: gbp(685000) };
 const fd: Product = { ...base, id: 'f1', type: 'fixed_deposit', name: 'Term deposit', last4: '7710', depositedAmount: gbp(500000), maturityDate: '2027-03-14', interestRatePercent: 4.6 };
 
-function respond(response: DashboardResponse) {
-  vi.mocked(fetchDashboard).mockResolvedValue(response);
+function respond(response: Omit<DashboardResponse, 'recentTransactions'> & Partial<DashboardResponse>) {
+  vi.mocked(fetchDashboard).mockResolvedValue({ recentTransactions: [], ...response });
 }
+
+const txn = (id: string, description: string, productId = 'a1'): Transaction => ({
+  id, productId, description, category: 'Groceries', date: '2026-11-22', amount: gbp(-6219),
+});
 
 describe('DashboardPage', () => {
   afterEach(() => vi.clearAllMocks());
@@ -31,6 +35,25 @@ describe('DashboardPage', () => {
     const h1 = await screen.findByRole('heading', { level: 1 });
     expect(h1).toHaveTextContent(/^Good (morning|afternoon|evening), Maya$/);
     expect(header.compareDocumentPosition(h1) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('lists the transactions the service returns, between credit cards and loans', async () => {
+    respond({ customer: { name: 'Maya' }, products: [account, card('c1', 'Credit card'), loan], recentTransactions: [txn('t1', 'Tesco Stores')] });
+    render(<DashboardPage />);
+    const list = await screen.findByRole('list', { name: 'Recent transactions, newest first' });
+    expect(within(list).getByText('Tesco Stores')).toBeInTheDocument();
+    const cards = screen.getByRole('region', { name: 'Credit cards' });
+    const loans = screen.getByRole('region', { name: 'Loans' });
+    expect(cards.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(list.compareDocumentPosition(loans) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('shows the coming-soon message when View all is selected', async () => {
+    respond({ customer: { name: 'Maya' }, products: [account], recentTransactions: [txn('t1', 'Tesco Stores')] });
+    render(<DashboardPage />);
+    expect(screen.queryByRole('status')).toBeNull();
+    fireEvent.click(await screen.findByRole('link', { name: 'View all' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Transaction history is coming soon.');
   });
 
   it('omits the name when the profile has none', async () => {
@@ -84,6 +107,6 @@ describe('DashboardPage', () => {
     respond({ customer: { name: 'Maya' }, products: [fd, loan, card('c1', 'Credit card'), account] });
     render(<DashboardPage />);
     const headings = (await screen.findAllByRole('heading', { level: 2 })).map((h) => h.textContent);
-    expect(headings).toEqual(['Accounts', 'Credit cards', 'Loans', 'Fixed deposits']);
+    expect(headings).toEqual(['Accounts', 'Credit cards', 'Recent transactions', 'Loans', 'Fixed deposits']);
   });
 });

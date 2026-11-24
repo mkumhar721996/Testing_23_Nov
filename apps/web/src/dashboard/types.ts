@@ -14,4 +14,17 @@ export type Product =
       interestRatePercent: number;
     });
 
-export type DashboardResponse = { customer: { name: string | null }; products: Product[] };
+export type Transaction = {
+  id: string;
+  productId: string; // an account or credit card id from `products`
+  description: string;
+  category: string;
+  date: string; // YYYY-MM-DD
+  amount: Money; // signed minor units, negative = money out, in the product's currency
+};
+
+export type DashboardResponse = {
+  customer: { name: string | null };
+  products: Product[];
+  recentTransactions: Transaction[];
+};
