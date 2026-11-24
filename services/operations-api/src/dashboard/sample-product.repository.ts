@@ -9,7 +9,11 @@ export class SampleProductRepository implements ProductRepository {
       ? SAMPLE_CUSTOMERS[customerId]
       : undefined;
     return customer
-      ? { name: customer.name, products: [...customer.products] }
-      : { name: null, products: [] };
+      ? {
+          name: customer.name,
+          products: [...customer.products],
+          transactions: [...customer.transactions],
+        }
+      : { name: null, products: [], transactions: [] };
   }
 }

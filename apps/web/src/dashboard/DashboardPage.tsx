@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
+import ComingSoonToast, { useComingSoon } from '../components/ComingSoonToast';
 import TopBar from '../components/TopBar';
 import { fetchDashboard } from './dashboard-api';
 import './dashboard.css';
 import Greeting from './Greeting';
 import ProductSection from './ProductSection';
+import RecentTransactions from './RecentTransactions';
 import type { DashboardResponse, Product } from './types';
 
 const SECTIONS: { type: Product['type']; title: string }[] = [
@@ -16,6 +18,7 @@ const SECTIONS: { type: Product['type']; title: string }[] = [
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [now] = useState(() => new Date());
+  const comingSoon = useComingSoon();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -38,14 +41,24 @@ export default function DashboardPage() {
             <div className="page-body stack-lg">
               {SECTIONS.map(({ type, title }) => {
                 const products = data.products.filter((p) => p.type === type);
-                return products.length > 0 ? (
-                  <ProductSection key={type} title={title} products={products} />
-                ) : null;
+                return (
+                  <Fragment key={type}>
+                    {products.length > 0 && <ProductSection title={title} products={products} />}
+                    {type === 'credit_card' && (
+                      <RecentTransactions
+                        transactions={data.recentTransactions}
+                        products={data.products}
+                        onViewAll={() => comingSoon.show('Transaction history')}
+                      />
+                    )}
+                  </Fragment>
+                );
               })}
             </div>
           </div>
         </main>
       )}
+      <ComingSoonToast message={comingSoon.message} onDismiss={comingSoon.dismiss} />
     </>
   );
 }
