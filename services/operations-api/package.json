@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "description": "Operations API (comp_operations_api)",
-  "engines": { "node": "22" },
+  "engines": {
+    "node": "22"
+  },
   "packageManager": "pnpm@12.9.1",
   "scripts": {
     "build": "nest build",
@@ -19,6 +21,7 @@
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "jose": "^6.2.18",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },

@@ -1,0 +1,61 @@
+openapi: 3.0.3
+info:
+  title: Operations API
+  version: 1.0.0
+paths:
+  /dashboard:
+    get:
+      summary: Dashboard overview for the signed-in customer
+      description: The customer is identified only by the verified Entra ID bearer token; no customer id is accepted.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Customer name and held products, ordered accounts, credit cards, loans, fixed deposits.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+        '401':
+          description: Missing or invalid bearer token.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Money:
+      type: object
+      required: [amountMinor, currency]
+      properties:
+        amountMinor: { type: integer, description: Amount in the currency's minor units }
+        currency: { type: string, description: ISO 4217 code }
+    DashboardResponse:
+      type: object
+      required: [customer, products]
+      properties:
+        customer:
+          type: object
+          required: [name]
+          properties:
+            name: { type: string, nullable: true }
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+    Product:
+      type: object
+      required: [id, type, name, last4, currency]
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [account, credit_card, loan, fixed_deposit] }
+        name: { type: string }
+        last4: { type: string, description: Last 4 digits of the product number; the full number is never sent }
+        currency: { type: string }
+        currentBalance: { $ref: '#/components/schemas/Money' }
+        amountOwed: { $ref: '#/components/schemas/Money' }
+        availableCredit: { $ref: '#/components/schemas/Money' }
+        outstandingBalance: { $ref: '#/components/schemas/Money' }
+        depositedAmount: { $ref: '#/components/schemas/Money' }
+        maturityDate: { type: string, format: date }
+        interestRatePercent: { type: number }
