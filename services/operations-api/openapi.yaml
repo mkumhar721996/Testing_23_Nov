@@ -1,0 +1,69 @@
+openapi: 3.0.3
+info:
+  title: Operations API
+  version: 0.1.0
+paths:
+  /orders:
+    get:
+      operationId: listOrders
+      summary: The signed-in customer's orders, newest first, split into active and past
+      responses:
+        '200':
+          description: Orders of the signed-in customer
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [active, past]
+                properties:
+                  active:
+                    type: array
+                    items: { $ref: '#/components/schemas/OrderSummary' }
+                  past:
+                    type: array
+                    items: { $ref: '#/components/schemas/OrderSummary' }
+        '401':
+          description: Not signed in
+  /orders/{orderId}/reorder:
+    post:
+      operationId: reorderOrder
+      summary: Add the items of a finished order to the customer's cart, keeping what is already there
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Items added to the cart
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [cartId, addedItemCount]
+                properties:
+                  cartId: { type: string }
+                  addedItemCount: { type: integer }
+        '401':
+          description: Not signed in
+        '404':
+          description: No such order for this customer
+        '409':
+          description: The order is not finished
+components:
+  schemas:
+    OrderStatus:
+      type: string
+      enum: [placed, accepted, preparing, ready, completed, rejected, cancelled]
+    OrderSummary:
+      type: object
+      required: [id, restaurantId, restaurantName, status, placedAt, itemCount, totalMinor, currency]
+      properties:
+        id: { type: string }
+        restaurantId: { type: string }
+        restaurantName: { type: string }
+        status: { $ref: '#/components/schemas/OrderStatus' }
+        placedAt: { type: string, format: date-time }
+        itemCount: { type: integer }
+        totalMinor: { type: integer, description: Minor currency units }
+        currency: { type: string, description: ISO 4217 code }
