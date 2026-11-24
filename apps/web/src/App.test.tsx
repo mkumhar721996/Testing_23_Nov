@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import App from './App';
 
 vi.mock('./dashboard/dashboard-api', () => ({
-  fetchDashboard: async () => ({ customer: { name: 'Maya' }, products: [] }),
+  fetchDashboard: async () => ({ customer: { name: 'Maya' }, products: [], recentTransactions: [] }),
 }));
 
 describe('App', () => {
