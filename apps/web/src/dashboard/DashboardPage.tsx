@@ -2,6 +2,7 @@ import ComingSoonToast, { useComingSoon } from '../components/ComingSoonToast';
 import TopBar from '../components/TopBar';
 import './dashboard.css';
 import Messages from './Messages';
+import MonthCalendar from './MonthCalendar';
 import RecentTrips from './RecentTrips';
 import StatTiles from './StatTiles';
 import TravelAreas from './TravelAreas';
@@ -31,6 +32,7 @@ export default function DashboardPage() {
                 <RecentTrips onComingSoon={comingSoon.show} />
               </div>
               <div className="dash-side">
+                <MonthCalendar />
                 <UpcomingTrips onComingSoon={comingSoon.show} />
               </div>
             </div>

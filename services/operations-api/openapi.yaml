@@ -18,6 +18,29 @@ paths:
                 $ref: '#/components/schemas/DashboardStats'
         '401':
           description: Missing or invalid bearer token.
+  /dashboard/trips:
+    get:
+      summary: Trips of one month
+      description: Every trip whose start..end range overlaps the month, sorted by start then id. Dates are inclusive calendar dates with no time zone.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: month
+          in: query
+          required: true
+          description: Month as YYYY-MM.
+          schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$', example: '2028-07' }
+      responses:
+        '200':
+          description: The month and its trips (an empty list when there are none).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonthTrips'
+        '400':
+          description: The month is missing or is not a YYYY-MM value.
+        '401':
+          description: Missing or invalid bearer token.
   /dashboard/recent-trips:
     get:
       summary: Recent trips, newest first
@@ -100,6 +123,24 @@ components:
       properties:
         amountMinor: { type: integer, description: Amount in the currency's minor units }
         currency: { type: string, description: ISO 4217 code }
+    Trip:
+      type: object
+      required: [id, destination, type, start, end]
+      properties:
+        id: { type: string }
+        destination: { type: string, example: 'Tokyo, Japan' }
+        type: { type: string, example: Cultural exploration }
+        start: { type: string, format: date, description: First trip day, inclusive }
+        end: { type: string, format: date, description: Last trip day, inclusive }
+    MonthTrips:
+      type: object
+      required: [month, trips]
+      properties:
+        month: { type: string, example: '2028-07' }
+        trips:
+          type: array
+          items:
+            $ref: '#/components/schemas/Trip'
     DashboardStats:
       type: object
       required: [bookings, customers, earnings]

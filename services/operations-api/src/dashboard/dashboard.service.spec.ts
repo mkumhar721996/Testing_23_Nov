@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { DashboardService } from './dashboard.service';
 import { SAMPLE_STATS } from './sample-data';
 import { SampleStatsRepository } from './sample-stats.repository';
+import { SampleTripsRepository } from './sample-trips.repository';
 import { SampleWidgetsRepository } from './sample-widgets.repository';
 
-const makeService = () => new DashboardService(new SampleStatsRepository(), new SampleWidgetsRepository());
+const makeService = () =>
+  new DashboardService(new SampleStatsRepository(), new SampleWidgetsRepository(), new SampleTripsRepository());
 
 describe('DashboardService.getStats', () => {
   it('returns the sample travel totals', async () => {

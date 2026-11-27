@@ -4,10 +4,11 @@ import { AuthGuard } from '../auth/auth.guard';
 import { DashboardController } from './dashboard.controller';
 import { DashboardService } from './dashboard.service';
 import { SampleStatsRepository } from './sample-stats.repository';
+import { SampleTripsRepository } from './sample-trips.repository';
 import { SampleWidgetsRepository } from './sample-widgets.repository';
 
 const controller = () =>
-  new DashboardController(new DashboardService(new SampleStatsRepository(), new SampleWidgetsRepository()));
+  new DashboardController(new DashboardService(new SampleStatsRepository(), new SampleWidgetsRepository(), new SampleTripsRepository()));
 
 describe('DashboardController', () => {
   it('treats an unknown sort as latest', async () => {

@@ -15,3 +15,8 @@ export type UpcomingTrip = { id: string; kind: string; destination: string; star
 export type TravelPackage = { id: string; destination: string; bookings: number; createdAt: string };
 export type Message = { id: string; from: string; initials: string; preview: string; unread: number };
 export type PackageSort = 'latest' | 'most-booked';
+
+// start/end are inclusive calendar dates (YYYY-MM-DD) with no time zone.
+export type Trip = { id: string; destination: string; type: string; start: string; end: string };
+
+export type MonthTrips = { month: string; trips: Trip[] }; // month: YYYY-MM
