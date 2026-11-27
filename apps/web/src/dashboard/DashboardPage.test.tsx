@@ -5,12 +5,17 @@ import {
   fetchDashboardStats,
   fetchMessages,
   fetchRecentTrips,
+  fetchRevenue,
+  fetchTopDestinations,
   fetchTravelPackages,
   fetchUpcomingTrips,
 } from './dashboard-api';
+import { destinationsByPeriod, revenueByPeriod } from './fixtures';
 
 vi.mock('./dashboard-api', () => ({
   fetchDashboardStats: vi.fn(),
+  fetchRevenue: vi.fn(),
+  fetchTopDestinations: vi.fn(),
   fetchRecentTrips: vi.fn(),
   fetchUpcomingTrips: vi.fn(),
   fetchTravelPackages: vi.fn(),
@@ -22,6 +27,8 @@ const usd = (amountMinor: number) => ({ amountMinor, currency: 'USD' });
 
 function mockAll() {
   vi.mocked(fetchDashboardStats).mockResolvedValue(stats);
+  vi.mocked(fetchRevenue).mockImplementation(async (p) => revenueByPeriod[p]);
+  vi.mocked(fetchTopDestinations).mockImplementation(async (p) => destinationsByPeriod[p]);
   vi.mocked(fetchRecentTrips).mockResolvedValue([
     { id: 'a', destination: 'Sydney, Australia', startDate: '2026-06-02', endDate: '2026-06-09', travelers: 2458, expenses: usd(218000) },
   ]);
@@ -41,7 +48,49 @@ const card = (name: string) => screen.getByRole('heading', { name }).closest('.c
 
 describe('DashboardPage', () => {
   beforeEach(mockAll);
-  afterEach(() => vi.clearAllMocks());
+  afterEach(() => vi.resetAllMocks());
+
+  function choose(button: string, period: string) {
+    fireEvent.click(screen.getByRole('button', { name: button }));
+    fireEvent.click(screen.getByRole('menuitemradio', { name: period }));
+  }
+
+  it('changing the revenue period leaves the tiles and the donut alone', async () => {
+    vi.mocked(fetchDashboardStats).mockResolvedValue(stats);
+    render(<DashboardPage />);
+    await screen.findByText('Total bookings');
+    const tilesBefore = screen.getByText('Total bookings').closest('.grid')!.innerHTML;
+    const donutBefore = (await screen.findByRole('img', { name: /donut chart/i })).outerHTML;
+    await choose('Revenue period', 'Yearly');
+    await screen.findByRole('img', { name: /revenue by year/i });
+    expect(screen.getByText('Total bookings').closest('.grid')!.innerHTML).toBe(tilesBefore);
+    expect(screen.getByRole('img', { name: /donut chart/i }).outerHTML).toBe(donutBefore);
+    expect(fetchDashboardStats).toHaveBeenCalledTimes(1);
+    expect(fetchTopDestinations).toHaveBeenCalledTimes(1);
+  });
+
+  it('changing the destinations period leaves the tiles and the revenue chart alone', async () => {
+    vi.mocked(fetchDashboardStats).mockResolvedValue(stats);
+    render(<DashboardPage />);
+    await screen.findByText('Total bookings');
+    const tilesBefore = screen.getByText('Total bookings').closest('.grid')!.innerHTML;
+    const revenueBefore = (await screen.findByRole('img', { name: /line chart/i })).outerHTML;
+    await choose('Destinations period', 'Yearly');
+    await screen.findByText('Tokyo, Japan (38%)');
+    expect(screen.getByText('Total bookings').closest('.grid')!.innerHTML).toBe(tilesBefore);
+    expect(screen.getByRole('img', { name: /line chart/i }).outerHTML).toBe(revenueBefore);
+    expect(fetchDashboardStats).toHaveBeenCalledTimes(1);
+    expect(fetchRevenue).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the other widgets when the revenue fetch fails', async () => {
+    vi.mocked(fetchDashboardStats).mockResolvedValue(stats);
+    vi.mocked(fetchRevenue).mockRejectedValue(new Error('x'));
+    render(<DashboardPage />);
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't load revenue.");
+    expect(await screen.findByText('Total bookings')).toBeInTheDocument();
+    expect(await screen.findByRole('img', { name: /donut chart/i })).toBeInTheDocument();
+  });
 
   it('shows the travel dashboard with no banking content', async () => {
     render(<DashboardPage />);

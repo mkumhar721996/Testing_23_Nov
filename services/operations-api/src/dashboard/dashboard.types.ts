@@ -2,6 +2,14 @@ export type Money = { amountMinor: number; currency: string }; // ISO 4217, mino
 
 export type DashboardStats = { bookings: number; customers: number; earnings: Money };
 
+export type Period = 'weekly' | 'monthly' | 'yearly';
+
+export type RevenuePoint = { label: string; amountMinor: number };
+export type RevenueSeries = { period: Period; currency: string; points: RevenuePoint[] };
+
+export type DestinationShare = { name: string; country: string; percent: number; participants: number };
+export type TopDestinations = { period: Period; destinations: DestinationShare[] };
+
 // Dates are ISO yyyy-mm-dd strings; the Web App formats them.
 export type RecentTrip = {
   id: string;

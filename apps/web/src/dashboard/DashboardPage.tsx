@@ -3,7 +3,9 @@ import TopBar from '../components/TopBar';
 import './dashboard.css';
 import Messages from './Messages';
 import RecentTrips from './RecentTrips';
+import RevenueOverview from './RevenueOverview';
 import StatTiles from './StatTiles';
+import TopDestinationsCard from './TopDestinationsCard';
 import TravelAreas from './TravelAreas';
 import TravelPackages from './TravelPackages';
 import UpcomingTrips from './UpcomingTrips';
@@ -26,6 +28,10 @@ export default function DashboardPage() {
             <div className="dash">
               <div className="dash-main">
                 <StatTiles />
+                <div className="pair">
+                  <RevenueOverview />
+                  <TopDestinationsCard />
+                </div>
                 <Messages onComingSoon={comingSoon.show} />
                 <TravelPackages onComingSoon={comingSoon.show} />
                 <RecentTrips onComingSoon={comingSoon.show} />

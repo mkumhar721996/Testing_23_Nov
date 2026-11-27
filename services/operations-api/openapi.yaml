@@ -18,6 +18,42 @@ paths:
                 $ref: '#/components/schemas/DashboardStats'
         '401':
           description: Missing or invalid bearer token.
+  /dashboard/revenue:
+    get:
+      summary: Revenue overview for a period
+      description: Organisation-wide revenue series for the line chart. The period is required; there is no default.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Period'
+      responses:
+        '200':
+          description: Revenue points for the period.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevenueSeries'
+        '400':
+          description: Missing or unknown period.
+        '401':
+          description: Missing or invalid bearer token.
+  /dashboard/destinations:
+    get:
+      summary: Top destinations for a period
+      description: Organisation-wide destination shares for the donut chart. The period is required; there is no default.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Period'
+      responses:
+        '200':
+          description: Destination shares for the period; percentages sum to 100.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopDestinations'
+        '400':
+          description: Missing or unknown period.
   /dashboard/recent-trips:
     get:
       summary: Recent trips, newest first
@@ -89,6 +125,13 @@ paths:
         '401':
           description: Missing or invalid bearer token.
 components:
+  parameters:
+    Period:
+      name: period
+      in: query
+      required: true
+      schema:
+        $ref: '#/components/schemas/Period'
   securitySchemes:
     bearerAuth:
       type: http
@@ -110,6 +153,38 @@ components:
           allOf:
             - $ref: '#/components/schemas/Money'
           description: Total earnings in minor units.
+    Period:
+      type: string
+      enum: [weekly, monthly, yearly]
+    RevenueSeries:
+      type: object
+      required: [period, currency, points]
+      properties:
+        period: { $ref: '#/components/schemas/Period' }
+        currency: { type: string, description: ISO 4217 code }
+        points:
+          type: array
+          items:
+            type: object
+            required: [label, amountMinor]
+            properties:
+              label: { type: string, description: 'Axis label: day, month or year' }
+              amountMinor: { type: integer, description: Revenue in the currency's minor units }
+    TopDestinations:
+      type: object
+      required: [period, destinations]
+      properties:
+        period: { $ref: '#/components/schemas/Period' }
+        destinations:
+          type: array
+          items:
+            type: object
+            required: [name, country, percent, participants]
+            properties:
+              name: { type: string }
+              country: { type: string }
+              percent: { type: integer, description: Share of trips, whole percent }
+              participants: { type: integer }
 
     RecentTrip:
       type: object

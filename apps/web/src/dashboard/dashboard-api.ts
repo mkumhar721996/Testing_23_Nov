@@ -3,7 +3,10 @@ import type {
   DashboardStats,
   Message,
   PackageSort,
+  Period,
   RecentTrip,
+  RevenueSeries,
+  TopDestinations,
   TravelPackage,
   UpcomingTrip,
 } from './types';
@@ -25,3 +28,7 @@ export const fetchUpcomingTrips = (signal?: AbortSignal) =>
 export const fetchTravelPackages = (sort: PackageSort, signal?: AbortSignal) =>
   getDashboard<TravelPackage[]>(`travel-packages?sort=${sort}`, signal);
 export const fetchMessages = (signal?: AbortSignal) => getDashboard<Message[]>('messages', signal);
+export const fetchRevenue = (period: Period, signal?: AbortSignal) =>
+  getDashboard<RevenueSeries>(`revenue?period=${period}`, signal);
+export const fetchTopDestinations = (period: Period, signal?: AbortSignal) =>
+  getDashboard<TopDestinations>(`destinations?period=${period}`, signal);

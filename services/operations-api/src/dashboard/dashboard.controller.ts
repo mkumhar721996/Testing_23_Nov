@@ -5,9 +5,12 @@ import type {
   DashboardStats,
   Message,
   RecentTrip,
+  RevenueSeries,
+  TopDestinations,
   TravelPackage,
   UpcomingTrip,
 } from './dashboard.types';
+import { parsePeriod } from './period';
 
 @Controller('dashboard')
 @UseGuards(AuthGuard)
@@ -18,6 +21,16 @@ export class DashboardController {
   @Get('stats')
   getStats(): Promise<DashboardStats> {
     return this.dashboard.getStats();
+  }
+
+  @Get('revenue')
+  getRevenue(@Query('period') period?: string): Promise<RevenueSeries> {
+    return this.dashboard.getRevenue(parsePeriod(period));
+  }
+
+  @Get('destinations')
+  getDestinations(@Query('period') period?: string): Promise<TopDestinations> {
+    return this.dashboard.getTopDestinations(parsePeriod(period));
   }
 
   @Get('recent-trips')

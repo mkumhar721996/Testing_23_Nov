@@ -3,7 +3,10 @@ import type {
   DashboardStats,
   Message,
   PackageSort,
+  Period,
   RecentTrip,
+  RevenueSeries,
+  TopDestinations,
   TravelPackage,
   UpcomingTrip,
 } from './dashboard.types';
@@ -19,6 +22,14 @@ export class DashboardService {
 
   getStats(): Promise<DashboardStats> {
     return this.stats.getStats();
+  }
+
+  getRevenue(period: Period): Promise<RevenueSeries> {
+    return this.stats.getRevenue(period);
+  }
+
+  getTopDestinations(period: Period): Promise<TopDestinations> {
+    return this.stats.getTopDestinations(period);
   }
 
   getRecentTrips(): Promise<RecentTrip[]> {
