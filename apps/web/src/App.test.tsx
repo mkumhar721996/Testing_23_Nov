@@ -24,6 +24,16 @@ describe('App', () => {
     expect(screen.queryByRole('list', { name: /Recent transactions/ })).toBeNull();
   });
 
+  it('shows the coming soon dialog over the page from the menu and closes it', async () => {
+    render(<App />);
+    await screen.findByRole('heading', { level: 1, name: 'My work' });
+    fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+    expect(screen.getByRole('dialog')).toHaveTextContent('This feature is coming soon.');
+    fireEvent.click(screen.getByRole('button', { name: 'Back to dashboard' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('heading', { level: 1, name: 'My work' })).toBeVisible();
+  });
+
   it('opens the create-defect form from the call-to-action', async () => {
     render(<App />);
     const [cta] = await screen.findAllByRole('link', { name: 'Create defect' });
