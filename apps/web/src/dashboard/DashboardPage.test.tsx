@@ -79,6 +79,21 @@ describe('DashboardPage', () => {
     expect(screen.getByRole('main').querySelector('.page-body')!.firstElementChild).toBe(tiles);
   });
 
+  it('shows coming soon for Notifications', async () => {
+    vi.mocked(fetchDashboardStats).mockResolvedValue(stats);
+    render(<DashboardPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'Notifications' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Notifications is coming soon.');
+  });
+
+  it('shows coming soon for Profile from the account menu', async () => {
+    vi.mocked(fetchDashboardStats).mockResolvedValue(stats);
+    render(<DashboardPage />);
+    fireEvent.click(screen.getByRole('button', { name: /account menu/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Profile' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Profile is coming soon.');
+  });
+
   it('keeps the page when the stats fetch fails', async () => {
     vi.mocked(fetchDashboardStats).mockRejectedValue(new Error('x'));
     render(<DashboardPage />);
