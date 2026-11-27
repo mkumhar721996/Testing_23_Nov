@@ -1,24 +1,34 @@
 import { getAccessToken } from '../auth/session';
-import type { DashboardStats, Period, RevenueSeries, TopDestinations } from './types';
+import type {
+  DashboardStats,
+  Message,
+  PackageSort,
+  Period,
+  RecentTrip,
+  RevenueSeries,
+  TopDestinations,
+  TravelPackage,
+  UpcomingTrip,
+} from './types';
 
-async function getJson<T>(path: string, what: string, signal?: AbortSignal): Promise<T> {
+async function getDashboard<T>(path: string, signal?: AbortSignal): Promise<T> {
   const token = await getAccessToken();
-  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${path}`, {
+  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/dashboard/${path}`, {
     headers: { Authorization: `Bearer ${token}` },
     signal,
   });
-  if (!response.ok) throw new Error(`${what} request failed: ${response.status}`);
+  if (!response.ok) throw new Error(`Dashboard ${path} request failed: ${response.status}`);
   return (await response.json()) as T;
 }
 
-export function fetchDashboardStats(signal?: AbortSignal): Promise<DashboardStats> {
-  return getJson('/dashboard/stats', 'Dashboard stats', signal);
-}
-
-export function fetchRevenue(period: Period, signal?: AbortSignal): Promise<RevenueSeries> {
-  return getJson(`/dashboard/revenue?period=${period}`, 'Revenue', signal);
-}
-
-export function fetchTopDestinations(period: Period, signal?: AbortSignal): Promise<TopDestinations> {
-  return getJson(`/dashboard/destinations?period=${period}`, 'Top destinations', signal);
-}
+export const fetchDashboardStats = (signal?: AbortSignal) => getDashboard<DashboardStats>('stats', signal);
+export const fetchRecentTrips = (signal?: AbortSignal) => getDashboard<RecentTrip[]>('recent-trips', signal);
+export const fetchUpcomingTrips = (signal?: AbortSignal) =>
+  getDashboard<UpcomingTrip[]>('upcoming-trips', signal);
+export const fetchTravelPackages = (sort: PackageSort, signal?: AbortSignal) =>
+  getDashboard<TravelPackage[]>(`travel-packages?sort=${sort}`, signal);
+export const fetchMessages = (signal?: AbortSignal) => getDashboard<Message[]>('messages', signal);
+export const fetchRevenue = (period: Period, signal?: AbortSignal) =>
+  getDashboard<RevenueSeries>(`revenue?period=${period}`, signal);
+export const fetchTopDestinations = (period: Period, signal?: AbortSignal) =>
+  getDashboard<TopDestinations>(`destinations?period=${period}`, signal);

@@ -9,3 +9,17 @@ export type RevenueSeries = { period: Period; currency: string; points: RevenueP
 
 export type DestinationShare = { name: string; country: string; percent: number; participants: number };
 export type TopDestinations = { period: Period; destinations: DestinationShare[] };
+
+// Dates are ISO yyyy-mm-dd strings; the Web App formats them.
+export type RecentTrip = {
+  id: string;
+  destination: string;
+  startDate: string;
+  endDate: string;
+  travelers: number;
+  expenses: Money;
+};
+export type UpcomingTrip = { id: string; kind: string; destination: string; startDate: string; endDate: string };
+export type TravelPackage = { id: string; destination: string; bookings: number; createdAt: string };
+export type Message = { id: string; from: string; initials: string; preview: string; unread: number };
+export type PackageSort = 'latest' | 'most-booked';

@@ -16,3 +16,16 @@ export function formatEarnings({ amountMinor, currency }: Money): string {
 export function formatCount(n: number): string {
   return new Intl.NumberFormat('en-US').format(n);
 }
+
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+// ISO yyyy-mm-dd dates -> "2 – 9 June", or "30 June – 2 July" across months.
+export function formatDateRange(start: string, end: string): string {
+  const [, startMonth, startDay] = start.split('-').map(Number);
+  const [, endMonth, endDay] = end.split('-').map(Number);
+  if (startMonth === endMonth) return `${startDay} – ${endDay} ${MONTHS[endMonth - 1]}`;
+  return `${startDay} ${MONTHS[startMonth - 1]} – ${endDay} ${MONTHS[endMonth - 1]}`;
+}
