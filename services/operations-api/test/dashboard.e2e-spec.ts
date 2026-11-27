@@ -43,6 +43,19 @@ describe('GET /dashboard/stats', () => {
       .expect(401);
   });
 
+  it('returns the trips of a month and validates the month', async () => {
+    const auth = { Authorization: 'Bearer token-a' };
+    const res = await request(app.getHttpServer())
+      .get('/dashboard/trips?month=2028-07')
+      .set(auth)
+      .expect(200);
+    expect(res.body.month).toBe('2028-07');
+    expect(Array.isArray(res.body.trips)).toBe(true);
+    await request(app.getHttpServer()).get('/dashboard/trips').set(auth).expect(400);
+    await request(app.getHttpServer()).get('/dashboard/trips?month=2028-13').set(auth).expect(400);
+    await request(app.getHttpServer()).get('/dashboard/trips?month=2028-07').expect(401);
+  });
+
   it('no longer serves the banking overview', async () => {
     await request(app.getHttpServer())
       .get('/dashboard')

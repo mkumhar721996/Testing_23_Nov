@@ -1,6 +1,7 @@
 import ComingSoonToast, { useComingSoon } from '../components/ComingSoonToast';
 import TopBar from '../components/TopBar';
 import './dashboard.css';
+import MonthCalendar from './MonthCalendar';
 import StatTiles from './StatTiles';
 
 export default function DashboardPage() {
@@ -18,6 +19,9 @@ export default function DashboardPage() {
           </div>
           <div className="page-body">
             <StatTiles />
+            <div className="dash">
+              <MonthCalendar />
+            </div>
           </div>
         </div>
       </main>
