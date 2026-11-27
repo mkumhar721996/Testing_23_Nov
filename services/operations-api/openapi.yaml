@@ -3,19 +3,19 @@ info:
   title: Operations API
   version: 1.0.0
 paths:
-  /dashboard:
+  /my-work:
     get:
-      summary: Dashboard overview for the signed-in customer
-      description: The customer is identified only by the verified Entra ID bearer token; no customer id is accepted.
+      summary: The signed-in person's open defects and recently updated defects
+      description: The person is identified only by the verified Entra ID bearer token (its sub); no person id is accepted. Only defects in projects the person belongs to are returned.
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: Customer name and held products, ordered accounts, credit cards, loans, fixed deposits, and up to eight recent account and credit card transactions.
+          description: Up to 10 open defects assigned to the person and the 10 most recently modified defects across their projects.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DashboardResponse'
+                $ref: '#/components/schemas/MyWorkResponse'
         '401':
           description: Missing or invalid bearer token.
 components:
@@ -24,57 +24,50 @@ components:
       type: http
       scheme: bearer
   schemas:
-    Money:
+    MyWorkResponse:
       type: object
-      required: [amountMinor, currency]
+      required: [openDefects, recentlyUpdated, hasAnyDefects, projects]
       properties:
-        amountMinor: { type: integer, description: Amount in the currency's minor units }
-        currency: { type: string, description: ISO 4217 code }
-    DashboardResponse:
-      type: object
-      required: [customer, products, recentTransactions]
-      properties:
-        customer:
+        openDefects:
           type: object
-          required: [name]
+          required: [items, total]
           properties:
-            name: { type: string, nullable: true }
-        products:
+            items:
+              type: array
+              maxItems: 10
+              description: Defects assigned to the person with a status other than Closed, most recently modified first.
+              items:
+                $ref: '#/components/schemas/DefectSummary'
+            total:
+              type: integer
+              description: How many open defects are assigned to the person, which can exceed the 10 listed.
+        recentlyUpdated:
           type: array
+          maxItems: 10
+          description: The most recently modified defects across the person's projects, Closed included, newest first.
           items:
-            $ref: '#/components/schemas/Product'
-        recentTransactions:
+            $ref: '#/components/schemas/DefectSummary'
+        hasAnyDefects:
+          type: boolean
+          description: True when a defect is assigned to the person or exists in one of their projects.
+        projects:
           type: array
-          maxItems: 8
-          description: The customer's latest account and credit card transactions, newest first; loan and fixed deposit transactions are never included.
+          description: The person's projects.
           items:
-            $ref: '#/components/schemas/Transaction'
-    Transaction:
+            type: object
+            required: [id, name]
+            properties:
+              id: { type: string }
+              name: { type: string }
+    DefectSummary:
       type: object
-      required: [id, productId, description, category, date, amount]
+      required: [id, key, title, severity, status, projectName, createdByName, updatedAt]
       properties:
         id: { type: string }
-        productId: { type: string, description: Id of the account or credit card in products }
-        description: { type: string }
-        category: { type: string }
-        date: { type: string, format: date }
-        amount:
-          allOf:
-            - $ref: '#/components/schemas/Money'
-          description: Signed minor units, negative for money out, in the product's currency.
-    Product:
-      type: object
-      required: [id, type, name, last4, currency]
-      properties:
-        id: { type: string }
-        type: { type: string, enum: [account, credit_card, loan, fixed_deposit] }
-        name: { type: string }
-        last4: { type: string, description: Last 4 digits of the product number; the full number is never sent }
-        currency: { type: string }
-        currentBalance: { $ref: '#/components/schemas/Money' }
-        amountOwed: { $ref: '#/components/schemas/Money' }
-        availableCredit: { $ref: '#/components/schemas/Money' }
-        outstandingBalance: { $ref: '#/components/schemas/Money' }
-        depositedAmount: { $ref: '#/components/schemas/Money' }
-        maturityDate: { type: string, format: date }
-        interestRatePercent: { type: number }
+        key: { type: string, description: Person-facing key, for example DEF-142 }
+        title: { type: string }
+        severity: { type: string, enum: [Critical, High, Medium, Low] }
+        status: { type: string, enum: [New, Open, In Progress, Resolved, Closed, Reopened] }
+        projectName: { type: string }
+        createdByName: { type: string, nullable: true }
+        updatedAt: { type: string, format: date-time }

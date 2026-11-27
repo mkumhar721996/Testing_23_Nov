@@ -12,7 +12,9 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main.js",
-    "typecheck": "tsc --noEmit",
+    "migrate": "nest build && node dist/db/migrate.js",
+    "seed": "nest build && node dist/db/seed.js",
+    "typecheck":"tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",
     "e2e": "vitest run --config vitest.config.e2e.ts",
     "devloop": "pnpm typecheck && pnpm test"
@@ -21,7 +23,9 @@
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@types/pg": "^8.23.1",
     "jose": "^6.2.18",
+    "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },

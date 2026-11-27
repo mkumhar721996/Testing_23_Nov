@@ -4,6 +4,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
 import { TOKEN_VERIFIER } from '../src/auth/token-verifier';
+import { PG_POOL } from '../src/db/database.module';
 
 describe('GET /health', () => {
   let app: INestApplication;
@@ -12,6 +13,8 @@ describe('GET /health', () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     })
+      .overrideProvider(PG_POOL)
+      .useValue({ end: async () => undefined })
       .overrideProvider(TOKEN_VERIFIER)
       .useValue({ verify: async () => ({ subject: 'unused' }) })
       .compile();
