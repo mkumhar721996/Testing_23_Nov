@@ -41,6 +41,76 @@ paths:
           description: The month is missing or is not a YYYY-MM value.
         '401':
           description: Missing or invalid bearer token.
+  /dashboard/recent-trips:
+    get:
+      summary: Recent trips, newest first
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Recent trips, newest first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecentTrip'
+        '401':
+          description: Missing or invalid bearer token.
+  /dashboard/upcoming-trips:
+    get:
+      summary: Upcoming trips
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Upcoming trips.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UpcomingTrip'
+        '401':
+          description: Missing or invalid bearer token.
+  /dashboard/travel-packages:
+    get:
+      summary: Travel packages
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sort
+          in: query
+          required: false
+          description: Order of the packages; an unknown value is treated as latest.
+          schema: { type: string, enum: [latest, most-booked], default: latest }
+      responses:
+        '200':
+          description: Travel packages.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TravelPackage'
+        '401':
+          description: Missing or invalid bearer token.
+  /dashboard/messages:
+    get:
+      summary: Messages
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Messages.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+        '401':
+          description: Missing or invalid bearer token.
 components:
   securitySchemes:
     bearerAuth:
@@ -81,3 +151,40 @@ components:
           allOf:
             - $ref: '#/components/schemas/Money'
           description: Total earnings in minor units.
+
+    RecentTrip:
+      type: object
+      required: [id, destination, startDate, endDate, travelers, expenses]
+      properties:
+        id: { type: string }
+        destination: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        travelers: { type: integer }
+        expenses: { $ref: '#/components/schemas/Money' }
+    UpcomingTrip:
+      type: object
+      required: [id, kind, destination, startDate, endDate]
+      properties:
+        id: { type: string }
+        kind: { type: string }
+        destination: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+    TravelPackage:
+      type: object
+      required: [id, destination, bookings, createdAt]
+      properties:
+        id: { type: string }
+        destination: { type: string }
+        bookings: { type: integer }
+        createdAt: { type: string, format: date }
+    Message:
+      type: object
+      required: [id, from, initials, preview, unread]
+      properties:
+        id: { type: string }
+        from: { type: string }
+        initials: { type: string }
+        preview: { type: string }
+        unread: { type: integer, description: Unread count; 0 means all read }

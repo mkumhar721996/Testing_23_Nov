@@ -1,12 +1,27 @@
 import { getAccessToken } from '../auth/session';
-import type { DashboardStats } from './types';
+import type {
+  DashboardStats,
+  Message,
+  PackageSort,
+  RecentTrip,
+  TravelPackage,
+  UpcomingTrip,
+} from './types';
 
-export async function fetchDashboardStats(signal?: AbortSignal): Promise<DashboardStats> {
+async function getDashboard<T>(path: string, signal?: AbortSignal): Promise<T> {
   const token = await getAccessToken();
-  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/dashboard/stats`, {
+  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/dashboard/${path}`, {
     headers: { Authorization: `Bearer ${token}` },
     signal,
   });
-  if (!response.ok) throw new Error(`Dashboard stats request failed: ${response.status}`);
-  return (await response.json()) as DashboardStats;
+  if (!response.ok) throw new Error(`Dashboard ${path} request failed: ${response.status}`);
+  return (await response.json()) as T;
 }
+
+export const fetchDashboardStats = (signal?: AbortSignal) => getDashboard<DashboardStats>('stats', signal);
+export const fetchRecentTrips = (signal?: AbortSignal) => getDashboard<RecentTrip[]>('recent-trips', signal);
+export const fetchUpcomingTrips = (signal?: AbortSignal) =>
+  getDashboard<UpcomingTrip[]>('upcoming-trips', signal);
+export const fetchTravelPackages = (sort: PackageSort, signal?: AbortSignal) =>
+  getDashboard<TravelPackage[]>(`travel-packages?sort=${sort}`, signal);
+export const fetchMessages = (signal?: AbortSignal) => getDashboard<Message[]>('messages', signal);

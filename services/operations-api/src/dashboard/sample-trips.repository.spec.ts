@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { DashboardService } from './dashboard.service';
 import { SampleStatsRepository } from './sample-stats.repository';
 import { SampleTripsRepository } from './sample-trips.repository';
+import { SampleWidgetsRepository } from './sample-widgets.repository';
 
 const service = () =>
   new DashboardService(
     new SampleStatsRepository(),
+    new SampleWidgetsRepository(),
     new SampleTripsRepository(() => new Date(2028, 6, 15)),
   );
 
