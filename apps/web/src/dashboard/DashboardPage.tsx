@@ -8,7 +8,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <TopBar />
+      <TopBar onComingSoon={comingSoon.show} onError={comingSoon.notify} />
       <main className="dashboard-content">
         <div className="page" data-layout="dashboard">
           <div className="page-header">
