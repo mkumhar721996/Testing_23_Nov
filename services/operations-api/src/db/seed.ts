@@ -29,7 +29,19 @@ const DEFECTS: [string, string, number, string, string, string, string, number][
   ['142', 'Refund total rounds down on partial refunds', 0, 'High', 'In Progress', 'me', 'seed-person-priya', 2],
 ];
 
-/** Inserts sample projects and defects for one person; safe to run again. */
+// [key, kind, status, amount (minor units), category, months ago, days ago] — posted_at is relative to now()
+const TRANSACTIONS: [string, string, string, number, string | null, number, number][] = [
+  ['groceries', 'card_purchase', 'posted', 24000, 'Groceries', 0, 0],
+  ['dining', 'card_purchase', 'posted', 9600, 'Dining', 0, 0],
+  ['transport', 'debit', 'posted', 8500, 'Transport', 0, 0],
+  ['uncategorised', 'debit', 'posted', 1100, null, 0, 0],
+  ['pending', 'card_purchase', 'pending', 4200, 'Shopping', 0, 0],
+  ['fee', 'fee', 'posted', 500, 'Fees', 0, 0],
+  ['transfer', 'transfer_in', 'posted', 50000, 'Transfers', 0, 0],
+  ['last-month', 'card_purchase', 'posted', 5000, 'Travel', 1, 0],
+];
+
+/** Inserts sample projects, defects and transactions for one person; safe to run again. */
 export async function runSeed(pool: Pool, personSub: string): Promise<void> {
   const client = await pool.connect();
   try {
@@ -66,6 +78,14 @@ export async function runSeed(pool: Pool, personSub: string): Promise<void> {
           creator,
           hoursAgo,
         ],
+      );
+    }
+    for (const [key, kind, status, amountMinor, category, monthOffset, daysAgo] of TRANSACTIONS) {
+      await client.query(
+        `INSERT INTO transactions (id, customer_id, kind, status, amount_minor, category, description, posted_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, now() - make_interval(days => $8) - make_interval(months => $9))
+         ON CONFLICT DO NOTHING`,
+        [`seed-txn-${key}`, personSub, kind, status, amountMinor, category, `Sample ${key}`, daysAgo, monthOffset],
       );
     }
     await client.query('COMMIT');

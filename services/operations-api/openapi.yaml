@@ -18,12 +18,59 @@ paths:
                 $ref: '#/components/schemas/MyWorkResponse'
         '401':
           description: Missing or invalid bearer token.
+  /spending/monthly:
+    get:
+      summary: The signed-in customer's spending by category for the current month
+      description: The customer is identified only by the verified bearer token. Totals cover posted debits and card purchases in the calendar month in the given time zone; pending items, transfers in and fees are excluded.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: timeZone
+          in: query
+          required: false
+          description: IANA time zone of the customer. Missing or invalid values fall back to UTC.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: One total per spending category, largest first.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonthlySpendingResponse'
+        '401':
+          description: Missing or invalid bearer token.
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
   schemas:
+    MonthlySpendingResponse:
+      type: object
+      required: [month, currency, totalMinor, categories]
+      properties:
+        month:
+          type: string
+          description: Month in the customer's time zone, as YYYY-MM.
+        currency:
+          type: string
+        totalMinor:
+          type: integer
+          description: Sum of all category totals, in minor units.
+        categories:
+          type: array
+          items:
+            type: object
+            required: [category, totalMinor]
+            properties:
+              category:
+                type: string
+                nullable: true
+                description: Null for spending that has no category.
+              totalMinor:
+                type: integer
+                description: Spending in minor units (pence).
     MyWorkResponse:
       type: object
       required: [openDefects, recentlyUpdated, hasAnyDefects, projects]
