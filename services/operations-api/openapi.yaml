@@ -18,6 +18,29 @@ paths:
                 $ref: '#/components/schemas/DashboardStats'
         '401':
           description: Missing or invalid bearer token.
+  /search:
+    get:
+      summary: Search trips and bookings
+      description: Case-insensitive "contains" match on the trip name and the booking name; results keep sample order.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Part of a trip or booking name; surrounding whitespace is ignored.
+          schema: { type: string }
+      responses:
+        '200':
+          description: The trips and bookings whose name contains the term (either list may be empty).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResults'
+        '400':
+          description: The term is missing or blank.
+        '401':
+          description: Missing or invalid bearer token.
 components:
   securitySchemes:
     bearerAuth:
@@ -40,3 +63,30 @@ components:
           allOf:
             - $ref: '#/components/schemas/Money'
           description: Total earnings in minor units.
+    Trip:
+      type: object
+      required: [id, name, startDate, endDate]
+      properties:
+        id: { type: string, example: T-101 }
+        name: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+    Booking:
+      type: object
+      required: [id, name, tripId, status, bookedOn]
+      properties:
+        id: { type: string, example: B-2041 }
+        name: { type: string }
+        tripId: { type: string }
+        status: { type: string, enum: [Confirmed, Pending, Cancelled] }
+        bookedOn: { type: string, format: date }
+    SearchResults:
+      type: object
+      required: [trips, bookings]
+      properties:
+        trips:
+          type: array
+          items: { $ref: '#/components/schemas/Trip' }
+        bookings:
+          type: array
+          items: { $ref: '#/components/schemas/Booking' }

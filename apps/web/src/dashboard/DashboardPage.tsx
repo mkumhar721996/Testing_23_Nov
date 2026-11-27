@@ -1,14 +1,24 @@
+import { useState } from 'react';
 import ComingSoonToast, { useComingSoon } from '../components/ComingSoonToast';
 import TopBar from '../components/TopBar';
+import SearchResults from '../search/SearchResults';
+import { useSearch } from '../search/useSearch';
 import './dashboard.css';
 import StatTiles from './StatTiles';
 
 export default function DashboardPage() {
   const comingSoon = useComingSoon();
+  const search = useSearch();
+  const [clearSignal, setClearSignal] = useState(0);
+
+  function clearSearch() {
+    search.clear();
+    setClearSignal((n) => n + 1);
+  }
 
   return (
     <>
-      <TopBar />
+      <TopBar onSearch={search.run} searching={search.status === 'searching'} clearSignal={clearSignal} />
       <main className="dashboard-content">
         <div className="page" data-layout="dashboard">
           <div className="page-header">
@@ -17,7 +27,18 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="page-body">
-            <StatTiles />
+            {search.status === 'idle' ? (
+              <StatTiles />
+            ) : (
+              <SearchResults
+                status={search.status}
+                query={search.query}
+                results={search.results}
+                onClear={clearSearch}
+                onRetry={search.retry}
+                onOpen={comingSoon.show}
+              />
+            )}
           </div>
         </div>
       </main>
