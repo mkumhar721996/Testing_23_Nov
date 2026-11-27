@@ -60,9 +60,10 @@ describe.skipIf(!TEST_DATABASE_URL)('PgTransactionRepository', () => {
 
   it('sums posted debits and card purchases per category, largest first', async () => {
     const rows = await repo.sumMonthlySpendingByCategory('cust-a', 'Europe/London', NOW);
-    expect(rows.slice(0, 2)).toEqual([
-      { category: 'Dining', totalMinor: 2000 },
+    expect(rows).toEqual([
       { category: 'Groceries', totalMinor: 2400 },
+      { category: 'Dining', totalMinor: 2000 },
+      { category: null, totalMinor: 1100 },
     ]);
   });
 
@@ -93,7 +94,8 @@ describe.skipIf(!TEST_DATABASE_URL)('PgTransactionRepository', () => {
 
   it("uses the customer's local month boundary", async () => {
     expect((await totals('cust-c', 'Pacific/Auckland')).Shopping).toBe(1200);
-    expect((await totals('cust-c', 'UTC')).Shopping).toBe(undefined);
+    // in UTC the 31 Oct 1200 purchase is October, so only the 30 Nov 800 purchase counts
+    expect((await totals('cust-c', 'UTC')).Shopping).toBe(800);
     // 30 Nov 23:30 UTC is still November in New York
     expect((await totals('cust-c', 'America/New_York')).Shopping).toBe(800);
   });
