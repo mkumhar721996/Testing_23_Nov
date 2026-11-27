@@ -1,4 +1,5 @@
 import ComingSoonToast, { useComingSoon } from '../components/ComingSoonToast';
+import QuickActions from '../dashboard/QuickActions';
 import DefectList from './DefectList';
 import EmptyWorkState from './EmptyWorkState';
 import { useMyWork } from './useMyWork';
@@ -86,6 +87,7 @@ export default function MyWorkPage() {
           </div>
         </header>
         <div className="page-body">
+          <QuickActions />
           {state.status === 'loading' && <LoadingPanels />}
           {state.status === 'error' && (
             <div className="alert alert-danger" role="alert">

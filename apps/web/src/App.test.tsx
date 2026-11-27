@@ -34,6 +34,17 @@ describe('App', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'My work' })).toBeVisible();
   });
 
+  it('shows the three quick actions on the landing page, each opening the coming soon dialog', async () => {
+    render(<App />);
+    await screen.findByRole('heading', { level: 1, name: 'My work' });
+    for (const name of ['Transfer money', 'Pay a bill', 'Open a savings pot']) {
+      fireEvent.click(screen.getByRole('button', { name }));
+      expect(screen.getByRole('dialog')).toHaveTextContent('This feature is coming soon.');
+      fireEvent.click(screen.getByRole('button', { name: 'Back to dashboard' }));
+      expect(screen.queryByRole('dialog')).toBeNull();
+    }
+  });
+
   it('opens the create-defect form from the call-to-action', async () => {
     render(<App />);
     const [cta] = await screen.findAllByRole('link', { name: 'Create defect' });

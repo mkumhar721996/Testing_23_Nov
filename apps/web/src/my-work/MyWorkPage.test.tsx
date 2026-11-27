@@ -1,6 +1,10 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render as baseRender, screen, within } from '@testing-library/react';
+import type { ReactElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ComingSoonProvider } from '../components/ComingSoonDialog';
 import MyWorkPage from './MyWorkPage';
+
+const render = (ui: ReactElement) => baseRender(<ComingSoonProvider>{ui}</ComingSoonProvider>);
 import { fetchMyWork } from './my-work-api';
 import type { DefectSummary, MyWorkResponse } from './types';
 
