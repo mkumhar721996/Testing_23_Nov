@@ -1,19 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { DashboardResponse } from './dashboard.types';
-import { PRODUCT_REPOSITORY, type ProductRepository } from './product.repository';
-import { selectRecentTransactions } from './recent-transactions';
-import { sortProducts } from './sort-products';
+import type { DashboardStats } from './dashboard.types';
+import { STATS_REPOSITORY, type StatsRepository } from './stats.repository';
 
 @Injectable()
 export class DashboardService {
-  constructor(@Inject(PRODUCT_REPOSITORY) private readonly products: ProductRepository) {}
+  constructor(@Inject(STATS_REPOSITORY) private readonly stats: StatsRepository) {}
 
-  async getOverview(customerId: string): Promise<DashboardResponse> {
-    const { name, products, transactions } = await this.products.findByCustomerId(customerId);
-    return {
-      customer: { name },
-      products: sortProducts(products),
-      recentTransactions: selectRecentTransactions(products, transactions),
-    };
+  getStats(): Promise<DashboardStats> {
+    return this.stats.getStats();
   }
 }
