@@ -44,6 +44,26 @@ export class InMemoryDefectRepository implements DefectRepository {
       .map((d) => this.summary(d));
   }
 
+  async countByProject(personId: string, projectId: string) {
+    const inProject = this.visibleTo(personId).filter((d) => d.projectId === projectId);
+    const tally = (key: 'status' | 'severity') =>
+      inProject.reduce<Record<string, number>>((acc, d) => {
+        acc[d[key]] = (acc[d[key]] ?? 0) + 1;
+        return acc;
+      }, {});
+    return { total: inProject.length, byStatus: tally('status'), bySeverity: tally('severity') };
+  }
+
+  private lastViewed = new Map<string, string>();
+
+  async getLastViewedProjectId(personId: string) {
+    return this.lastViewed.get(personId) ?? null;
+  }
+
+  async setLastViewedProjectId(personId: string, projectId: string) {
+    this.lastViewed.set(personId, projectId);
+  }
+
   async findProjects(personId: string) {
     return this.data.projects
       .filter((p) => p.members.includes(personId))

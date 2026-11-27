@@ -32,4 +32,13 @@
 .dash-illus { width: calc(var(--space-9) + var(--space-3)); height: auto; color: var(--color-primary); }
 .dash-illus .soft { color: var(--color-border-strong); }
 .empty-guidance { max-width: var(--container-sm); }
+
+/* My work: project health */
+.health-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); }
+.health-bar .dropdown-menu { min-width: 16rem; }
+.health-hint { color: var(--color-fg-muted); font-size: var(--font-size-sm); }
+.health-group + .health-group { margin-top: var(--section-gap); }
+.health-group h2 { margin: 0 0 var(--density-gap); }
+.stat-card { padding: var(--density-padding); }
+.health-skeleton { display: block; height: var(--space-8); }
 @media (prefers-reduced-motion: reduce) { .dash-row { transition: none; } }

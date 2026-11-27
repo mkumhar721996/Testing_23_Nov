@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { DefectRepository } from './defect.repository';
 import type { SeedData, SeedDefect } from './in-memory-defect.repository';
 import { MyWorkService } from './my-work.service';
+import { ProjectHealthService } from './project-health.service';
 
 export type RepositoryFixture = { repo: DefectRepository; seed(data: SeedData): Promise<void> };
 
@@ -158,6 +159,42 @@ export function describeDefectRepository(name: string, setup: () => Promise<Repo
       });
       expect(first.updatedAt).toBe(at(5));
       expect(first.key).toBeTruthy();
+    });
+
+    it('counts by project: zero-filled, only the selected project, per person (AC1, AC2, AC6)', async () => {
+      await fixture.seed({
+        projects: [PAYMENTS, FIELD],
+        defects: [
+          ...Array.from({ length: 5 }, (_, i) =>
+            defect({ id: `a${i}`, projectId: 'p1', status: i === 0 ? 'In Progress' : 'Open' }),
+          ),
+          ...Array.from({ length: 3 }, (_, i) => defect({ id: `b${i}`, projectId: 'p2' })),
+        ],
+      });
+      const health = new ProjectHealthService(fixture.repo);
+      const res = await health.selectProject('me', 'p1');
+      expect(res.total).toBe(5);
+      expect(res.byStatus.find((c) => c.name === 'In Progress')?.count).toBe(1);
+      expect(res.byStatus.find((c) => c.name === 'Closed')?.count).toBe(0);
+      expect(res.bySeverity.reduce((n, c) => n + c.count, 0)).toBe(5);
+      expect(await fixture.repo.countByProject('other', 'p1')).toEqual({
+        total: 0,
+        byStatus: {},
+        bySeverity: {},
+      });
+    });
+
+    it('stores one last viewed project per person and falls back when it is no longer theirs (AC4, AC14)', async () => {
+      await fixture.seed({ projects: [PAYMENTS, FIELD, FOREIGN], defects: [] });
+      const health = new ProjectHealthService(fixture.repo);
+      await fixture.repo.setLastViewedProjectId('me', 'p1');
+      await fixture.repo.setLastViewedProjectId('me', 'p2');
+      expect(await fixture.repo.getLastViewedProjectId('me')).toBe('p2');
+      expect((await health.getProjectHealth('me')).selectedProjectId).toBe('p2');
+      await fixture.repo.setLastViewedProjectId('me', 'p9');
+      const res = await health.getProjectHealth('me');
+      expect(res.selectedProjectId).toBe('p2'); // Field service app sorts before Payments portal
+      expect(res.selectionReason).toBe('fallback');
     });
   });
 }
