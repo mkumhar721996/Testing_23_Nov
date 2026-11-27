@@ -13,19 +13,39 @@ export function formatEarnings({ amountMinor, currency }: Money): string {
   return formatter.format(amountMinor / 10 ** (digits ?? 2));
 }
 
-export function formatCount(n: number): string {
-  return new Intl.NumberFormat('en-US').format(n);
-}
-
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-// ISO yyyy-mm-dd dates -> "2 – 9 June", or "30 June – 2 July" across months.
-export function formatDateRange(start: string, end: string): string {
-  const [, startMonth, startDay] = start.split('-').map(Number);
-  const [, endMonth, endDay] = end.split('-').map(Number);
-  if (startMonth === endMonth) return `${startDay} – ${endDay} ${MONTHS[endMonth - 1]}`;
-  return `${startDay} ${MONTHS[startMonth - 1]} – ${endDay} ${MONTHS[endMonth - 1]}`;
+function parseIso(iso: string) {
+  const [year, month, day] = iso.split('-').map(Number);
+  return { year, month: MONTHS[month - 1], day };
+}
+
+// "2028-06-03" -> "3 June 2028"
+export function formatDay(iso: string): string {
+  const { year, month, day } = parseIso(iso);
+  return `${day} ${month} ${year}`;
+}
+
+// "2028-07-05", "2028-07-10" -> "5 – 10 July 2028"
+export function formatDateRange(startIso: string, endIso: string): string {
+  const start = parseIso(startIso);
+  const end = parseIso(endIso);
+  if (start.year !== end.year) return `${formatDay(startIso)} – ${formatDay(endIso)}`;
+  if (start.month !== end.month) return `${start.day} ${start.month} – ${end.day} ${end.month} ${end.year}`;
+  return `${start.day} – ${end.day} ${end.month} ${end.year}`;
+}
+
+export function formatCount(n: number): string {
+  return new Intl.NumberFormat('en-US').format(n);
+}
+
+// ISO yyyy-mm-dd dates without the year -> "2 – 9 June", or "30 June – 2 July" across months.
+export function formatShortDateRange(startIso: string, endIso: string): string {
+  const start = parseIso(startIso);
+  const end = parseIso(endIso);
+  if (start.month === end.month) return `${start.day} – ${end.day} ${end.month}`;
+  return `${start.day} ${start.month} – ${end.day} ${end.month}`;
 }

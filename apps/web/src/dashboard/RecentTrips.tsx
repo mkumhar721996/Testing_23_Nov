@@ -1,5 +1,5 @@
 import { fetchRecentTrips } from './dashboard-api';
-import { formatCount, formatDateRange, formatEarnings } from './format';
+import { formatCount, formatShortDateRange, formatEarnings } from './format';
 import { useWidgetData } from './useWidgetData';
 import WidgetError from './WidgetError';
 
@@ -56,7 +56,7 @@ export default function RecentTrips({ onComingSoon }: { onComingSoon: (featureNa
                 {data.map((trip) => (
                   <tr key={trip.id}>
                     <td>{trip.destination}</td>
-                    <td>{formatDateRange(trip.startDate, trip.endDate)}</td>
+                    <td>{formatShortDateRange(trip.startDate, trip.endDate)}</td>
                     <td>{formatCount(trip.travelers)}</td>
                     <td className="num">{formatEarnings(trip.expenses)}</td>
                   </tr>

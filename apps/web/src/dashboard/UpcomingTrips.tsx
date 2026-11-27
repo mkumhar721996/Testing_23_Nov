@@ -1,5 +1,5 @@
 import { fetchUpcomingTrips } from './dashboard-api';
-import { formatDateRange } from './format';
+import { formatShortDateRange } from './format';
 import { useWidgetData } from './useWidgetData';
 import WidgetError from './WidgetError';
 
@@ -46,7 +46,7 @@ export default function UpcomingTrips({ onComingSoon }: { onComingSoon: (feature
             <div className="trip-info">
               <span className="chip">{trip.kind}</span>
               <strong>{trip.destination}</strong>
-              <span className="text-muted text-sm">{formatDateRange(trip.startDate, trip.endDate)}</span>
+              <span className="text-muted text-sm">{formatShortDateRange(trip.startDate, trip.endDate)}</span>
             </div>
           </div>
         ))}
