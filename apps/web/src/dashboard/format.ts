@@ -41,3 +41,11 @@ export function formatDateRange(startIso: string, endIso: string): string {
 export function formatCount(n: number): string {
   return new Intl.NumberFormat('en-US').format(n);
 }
+
+// ISO yyyy-mm-dd dates without the year -> "2 – 9 June", or "30 June – 2 July" across months.
+export function formatShortDateRange(startIso: string, endIso: string): string {
+  const start = parseIso(startIso);
+  const end = parseIso(endIso);
+  if (start.month === end.month) return `${start.day} – ${end.day} ${end.month}`;
+  return `${start.day} ${start.month} – ${end.day} ${end.month}`;
+}

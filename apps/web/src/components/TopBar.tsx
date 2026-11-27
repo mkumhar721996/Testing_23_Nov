@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { getCurrentUser } from '../auth/session';
+import UserMenu from './UserMenu';
 
 type TopBarProps = {
   onSearch: (term: string) => void;
   searching: boolean;
   clearSignal?: number;
+  onComingSoon: (featureName: string) => void;
+  onError?: (message: string) => void;
 };
 
-export default function TopBar({ onSearch, searching, clearSignal }: TopBarProps) {
+export default function TopBar({ onSearch, searching, clearSignal, onComingSoon, onError }: TopBarProps) {
   const [term, setTerm] = useState('');
   const [invalid, setInvalid] = useState(false);
   const input = useRef<HTMLInputElement>(null);
@@ -72,6 +76,21 @@ export default function TopBar({ onSearch, searching, clearSignal }: TopBarProps
           {searching ? 'Searching…' : 'Search'}
         </button>
       </form>
+      <div className="top-bar-spacer" />
+      <div className="top-actions">
+        <button
+          className="btn btn-ghost btn-icon"
+          type="button"
+          aria-label="Notifications"
+          title="Notifications"
+          onClick={() => onComingSoon('Notifications')}
+        >
+          <svg className="icon" aria-hidden="true">
+            <use href="#i-bell" />
+          </svg>
+        </button>
+        <UserMenu user={getCurrentUser()} onComingSoon={onComingSoon} onError={onError} />
+      </div>
     </header>
   );
 }

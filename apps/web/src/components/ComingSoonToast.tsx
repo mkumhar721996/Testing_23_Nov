@@ -6,7 +6,7 @@ export function useComingSoon() {
   const [message, setMessage] = useState<string | null>(null);
   const show = useCallback((featureName: string) => setMessage(`${featureName} is coming soon.`), []);
   const dismiss = useCallback(() => setMessage(null), []);
-  return { message, show, dismiss };
+  return { message, show, notify: setMessage, dismiss };
 }
 
 export default function ComingSoonToast({
