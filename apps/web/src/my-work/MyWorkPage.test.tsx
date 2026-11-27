@@ -2,10 +2,22 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MyWorkPage from './MyWorkPage';
 import { fetchMyWork } from './my-work-api';
-import type { DefectSummary, MyWorkResponse } from './types';
+import { fetchProjectHealth } from './project-health-api';
+import type { DefectSummary, MyWorkResponse, ProjectHealth } from './types';
 
 vi.mock('./my-work-api', () => ({ fetchMyWork: vi.fn() }));
+vi.mock('./project-health-api', () => ({ fetchProjectHealth: vi.fn(), selectProject: vi.fn() }));
 const fetchMock = vi.mocked(fetchMyWork);
+const healthMock = vi.mocked(fetchProjectHealth);
+
+const health = (total: number): ProjectHealth => ({
+  projects: [{ id: 'p1', name: 'Payments portal' }],
+  selectedProjectId: 'p1',
+  selectionReason: 'last-viewed',
+  total,
+  byStatus: [{ name: 'Open', count: total }],
+  bySeverity: [{ name: 'High', count: total }],
+});
 
 const defect = (n: number, overrides: Partial<DefectSummary> = {}): DefectSummary => ({
   id: `d${n}`,
@@ -30,6 +42,8 @@ const panel = (name: string) => within(screen.getByRole('region', { name }));
 
 beforeEach(() => {
   fetchMock.mockReset();
+  healthMock.mockReset();
+  healthMock.mockResolvedValue(health(1));
 });
 
 describe('MyWorkPage', () => {
@@ -107,10 +121,12 @@ describe('MyWorkPage', () => {
     expect(screen.queryByRole('heading', { name: 'No defects found', level: 3 })).toBeNull();
   });
 
-  it('shows the empty state with a create-defect call-to-action for a new person', async () => {
+  it('shows the single project health empty state with a create-defect call-to-action for a new person', async () => {
     fetchMock.mockResolvedValue(response());
+    healthMock.mockResolvedValue(health(0));
     render(<MyWorkPage />);
     expect(await screen.findByRole('heading', { name: 'No defects found', level: 3 })).toBeInTheDocument();
+    expect(await screen.findAllByText('No defects found')).toHaveLength(1);
     const links = screen.getAllByRole('link', { name: 'Create defect' });
     expect(links.length).toBeGreaterThan(0);
     links.forEach((link) => expect(link).toHaveAttribute('href', '#/defects/new'));

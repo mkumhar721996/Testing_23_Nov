@@ -11,6 +11,18 @@ vi.mock('./my-work/my-work-api', () => ({
   }),
 }));
 
+vi.mock('./my-work/project-health-api', () => ({
+  fetchProjectHealth: async () => ({
+    projects: [{ id: 'p1', name: 'Payments portal' }],
+    selectedProjectId: 'p1',
+    selectionReason: 'last-viewed',
+    total: 0,
+    byStatus: [],
+    bySeverity: [],
+  }),
+  selectProject: vi.fn(),
+}));
+
 beforeEach(() => {
   window.location.hash = '#/';
 });

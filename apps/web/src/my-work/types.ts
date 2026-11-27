@@ -17,3 +17,14 @@ export type MyWorkResponse = {
   hasAnyDefects: boolean;
   projects: ProjectSummary[];
 };
+
+export type CountEntry = { name: string; count: number };
+
+export type ProjectHealth = {
+  projects: ProjectSummary[];
+  selectedProjectId: string | null;
+  selectionReason: 'last-viewed' | 'first-visit' | 'fallback' | 'picked' | null;
+  total: number;
+  byStatus: CountEntry[];
+  bySeverity: CountEntry[];
+};

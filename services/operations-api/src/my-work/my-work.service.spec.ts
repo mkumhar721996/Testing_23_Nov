@@ -8,6 +8,9 @@ const stub = (open: number, recent: number): DefectRepository => ({
     Array.from({ length: recent }, (_, i) => ({ id: `d${i}` }) as never),
   ),
   findProjects: vi.fn(async () => []),
+  countByProject: vi.fn(),
+  getLastViewedProjectId: vi.fn(),
+  setLastViewedProjectId: vi.fn(),
 });
 
 describe('MyWorkService', () => {

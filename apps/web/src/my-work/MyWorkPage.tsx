@@ -1,6 +1,6 @@
 import ComingSoonToast, { useComingSoon } from '../components/ComingSoonToast';
 import DefectList from './DefectList';
-import EmptyWorkState from './EmptyWorkState';
+import ProjectHealth from './ProjectHealth';
 import { useMyWork } from './useMyWork';
 import type { MyWorkResponse } from './types';
 import '../dashboard/dashboard.css';
@@ -86,6 +86,7 @@ export default function MyWorkPage() {
           </div>
         </header>
         <div className="page-body">
+          <ProjectHealth />
           {state.status === 'loading' && <LoadingPanels />}
           {state.status === 'error' && (
             <div className="alert alert-danger" role="alert">
@@ -101,12 +102,10 @@ export default function MyWorkPage() {
               </button>
             </div>
           )}
-          {state.status === 'ready' &&
-            (state.data.hasAnyDefects ? (
-              <Panels data={state.data} onSeeAll={() => comingSoon.show('All open defects')} />
-            ) : (
-              <EmptyWorkState />
-            ))}
+          {/* With no defects anywhere, the project health empty state stands in. */}
+          {state.status === 'ready' && state.data.hasAnyDefects && (
+            <Panels data={state.data} onSeeAll={() => comingSoon.show('All open defects')} />
+          )}
         </div>
       </div>
       <ComingSoonToast message={comingSoon.message} onDismiss={comingSoon.dismiss} />

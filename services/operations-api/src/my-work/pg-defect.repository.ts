@@ -65,6 +65,40 @@ export class PgDefectRepository implements DefectRepository {
     return rows.map(toSummary);
   }
 
+  async countByProject(personId: string, projectId: string) {
+    // Joined to project_members: a non-member gets empty counts.
+    const group = async (column: 'status' | 'severity') => {
+      const { rows } = await this.pool.query<{ name: string; count: number }>(
+        `SELECT d.${column} AS name, count(*)::int AS count
+           FROM defects d
+           JOIN project_members m ON m.project_id = d.project_id AND m.person_id = $1
+          WHERE d.project_id = $2
+          GROUP BY d.${column}`,
+        [personId, projectId],
+      );
+      return Object.fromEntries(rows.map((r) => [r.name, r.count]));
+    };
+    const [byStatus, bySeverity] = await Promise.all([group('status'), group('severity')]);
+    const total = Object.values(byStatus).reduce((n, c) => n + c, 0);
+    return { total, byStatus, bySeverity };
+  }
+
+  async getLastViewedProjectId(personId: string) {
+    const { rows } = await this.pool.query<{ project_id: string }>(
+      'SELECT project_id FROM project_last_viewed WHERE person_id = $1',
+      [personId],
+    );
+    return rows[0]?.project_id ?? null;
+  }
+
+  async setLastViewedProjectId(personId: string, projectId: string) {
+    await this.pool.query(
+      `INSERT INTO project_last_viewed (person_id, project_id) VALUES ($1, $2)
+       ON CONFLICT (person_id) DO UPDATE SET project_id = EXCLUDED.project_id, updated_at = now()`,
+      [personId, projectId],
+    );
+  }
+
   async findProjects(personId: string): Promise<ProjectSummary[]> {
     const { rows } = await this.pool.query<ProjectSummary>(
       `SELECT p.id, p.name

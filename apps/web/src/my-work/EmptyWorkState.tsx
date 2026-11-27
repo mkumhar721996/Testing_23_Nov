@@ -1,4 +1,4 @@
-export default function EmptyWorkState() {
+export default function EmptyWorkState({ message }: { message: string }) {
   return (
     <section className="card">
       <div className="empty-state">
@@ -18,10 +18,7 @@ export default function EmptyWorkState() {
           <path d="M84 58v12M78 64h12" />
         </svg>
         <h3 className="text-2xl">No defects found</h3>
-        <p className="empty-guidance">
-          You have no defects assigned and none have been logged in your projects yet. Create the
-          first one and it will show up here.
-        </p>
+        <p className="empty-guidance">{message}</p>
         <a className="btn btn-primary" href="#/defects/new">
           <svg className="icon" aria-hidden="true">
             <use href="#i-plus" />

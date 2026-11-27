@@ -18,7 +18,7 @@ describe.skipIf(!TEST_DATABASE_URL)('migrations and seed', () => {
     pool = await freshTestPool();
     expect(await runMigrations(pool)).toEqual([]);
     const { rows } = await pool.query('SELECT name FROM schema_migrations');
-    expect(rows).toEqual([{ name: '0001_defects.sql' }]);
+    expect(rows).toEqual([{ name: '0001_defects.sql' }, { name: '0002_project_last_viewed.sql' }]);
   });
 
   it('seeds idempotently: 15 defects, 11 open for the person', async () => {
