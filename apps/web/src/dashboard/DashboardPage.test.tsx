@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import DashboardPage from './DashboardPage';
 import { fetchDashboardStats } from './dashboard-api';
@@ -26,6 +26,21 @@ describe('DashboardPage', () => {
     const tiles = (await screen.findByText('Total bookings')).closest('.grid') as HTMLElement;
     expect(within(tiles).getAllByText(/^Total /)).toHaveLength(3);
     expect(screen.getByRole('main').querySelector('.page-body')!.firstElementChild).toBe(tiles);
+  });
+
+  it('shows coming soon for Notifications', async () => {
+    vi.mocked(fetchDashboardStats).mockResolvedValue(stats);
+    render(<DashboardPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'Notifications' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Notifications is coming soon.');
+  });
+
+  it('shows coming soon for Profile from the account menu', async () => {
+    vi.mocked(fetchDashboardStats).mockResolvedValue(stats);
+    render(<DashboardPage />);
+    fireEvent.click(screen.getByRole('button', { name: /account menu/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Profile' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Profile is coming soon.');
   });
 
   it('keeps the page when the stats fetch fails', async () => {
