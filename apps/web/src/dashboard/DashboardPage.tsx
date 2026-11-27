@@ -1,7 +1,9 @@
 import ComingSoonToast, { useComingSoon } from '../components/ComingSoonToast';
 import TopBar from '../components/TopBar';
 import './dashboard.css';
+import RevenueOverview from './RevenueOverview';
 import StatTiles from './StatTiles';
+import TopDestinationsCard from './TopDestinationsCard';
 
 export default function DashboardPage() {
   const comingSoon = useComingSoon();
@@ -18,6 +20,10 @@ export default function DashboardPage() {
           </div>
           <div className="page-body">
             <StatTiles />
+            <div className="pair">
+              <RevenueOverview />
+              <TopDestinationsCard />
+            </div>
           </div>
         </div>
       </main>
