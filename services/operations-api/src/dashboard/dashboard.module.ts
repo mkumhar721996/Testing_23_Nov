@@ -2,15 +2,12 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module';
 import { DashboardController } from './dashboard.controller';
 import { DashboardService } from './dashboard.service';
-import { PRODUCT_REPOSITORY } from './product.repository';
-import { SampleProductRepository } from './sample-product.repository';
+import { SampleStatsRepository } from './sample-stats.repository';
+import { STATS_REPOSITORY } from './stats.repository';
 
 @Module({
   imports: [AuthModule],
   controllers: [DashboardController],
-  providers: [
-    DashboardService,
-    { provide: PRODUCT_REPOSITORY, useClass: SampleProductRepository },
-  ],
+  providers: [DashboardService, { provide: STATS_REPOSITORY, useClass: SampleStatsRepository }],
 })
 export class DashboardModule {}
