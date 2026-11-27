@@ -1,4 +1,5 @@
 import ComingSoonToast, { useComingSoon } from '../components/ComingSoonToast';
+import SpendingChart from '../dashboard/SpendingChart';
 import DefectList from './DefectList';
 import EmptyWorkState from './EmptyWorkState';
 import { useMyWork } from './useMyWork';
@@ -107,6 +108,7 @@ export default function MyWorkPage() {
             ) : (
               <EmptyWorkState />
             ))}
+          <SpendingChart />
         </div>
       </div>
       <ComingSoonToast message={comingSoon.message} onDismiss={comingSoon.dismiss} />

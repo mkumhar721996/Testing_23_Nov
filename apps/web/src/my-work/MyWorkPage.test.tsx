@@ -6,6 +6,14 @@ import type { DefectSummary, MyWorkResponse } from './types';
 
 vi.mock('./my-work-api', () => ({ fetchMyWork: vi.fn() }));
 const fetchMock = vi.mocked(fetchMyWork);
+vi.mock('../dashboard/spending-api', () => ({
+  fetchMonthlySpending: vi.fn(async () => ({
+    month: '2026-11',
+    currency: 'GBP',
+    totalMinor: 0,
+    categories: [],
+  })),
+}));
 
 const defect = (n: number, overrides: Partial<DefectSummary> = {}): DefectSummary => ({
   id: `d${n}`,

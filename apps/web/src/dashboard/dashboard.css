@@ -32,4 +32,15 @@
 .dash-illus { width: calc(var(--space-9) + var(--space-3)); height: auto; color: var(--color-primary); }
 .dash-illus .soft { color: var(--color-border-strong); }
 .empty-guidance { max-width: var(--container-sm); }
+
+/* Spending by category */
+.section-title { margin: var(--space-1) 0 0; font-size: var(--font-size-xl); }
+.chart-wrap svg { width: 100%; height: auto; display: block; }
+.chart-wrap text { fill: var(--color-fg-muted); font-size: var(--font-size-sm); font-family: var(--font-family-body); }
+.chart-wrap .val { fill: var(--color-fg); font-weight: var(--font-weight-medium); }
+.chart-wrap .grid-line { stroke: var(--color-border); stroke-width: var(--border-width); }
+.chart-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); }
+.chart-table th, .chart-table td { text-align: left; padding: var(--space-1) 0; border-bottom: var(--border-width) solid var(--color-border); }
+.chart-table td:last-child, .chart-table th:last-child { text-align: right; }
+.chart-table caption { text-align: left; color: var(--color-fg-muted); padding-bottom: var(--space-1); }
 @media (prefers-reduced-motion: reduce) { .dash-row { transition: none; } }

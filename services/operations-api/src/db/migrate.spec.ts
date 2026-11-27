@@ -18,7 +18,22 @@ describe.skipIf(!TEST_DATABASE_URL)('migrations and seed', () => {
     pool = await freshTestPool();
     expect(await runMigrations(pool)).toEqual([]);
     const { rows } = await pool.query('SELECT name FROM schema_migrations');
-    expect(rows).toEqual([{ name: '0001_defects.sql' }]);
+    expect(rows).toEqual([{ name: '0001_defects.sql' }, { name: '0002_transactions.sql' }]);
+  });
+
+  it('creates transactions with check constraints on kind and amount', async () => {
+    await pool.query("INSERT INTO people (id, display_name) VALUES ('p-txn', 'P')");
+    const insert = (kind: string, amount: number) =>
+      pool.query(
+        `INSERT INTO transactions (customer_id, kind, status, amount_minor, description, posted_at)
+         VALUES ('p-txn', $1, 'posted', $2, 't', now())`,
+        [kind, amount],
+      );
+    await expect(insert('refund', 100)).rejects.toThrow(/check constraint/);
+    await expect(insert('debit', 0)).rejects.toThrow(/check constraint/);
+    await expect(insert('debit', 100)).resolves.toBeDefined();
+    await pool.query("DELETE FROM transactions WHERE customer_id = 'p-txn'");
+    await pool.query("DELETE FROM people WHERE id = 'p-txn'");
   });
 
   it('seeds idempotently: 15 defects, 11 open for the person', async () => {
